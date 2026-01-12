@@ -1,0 +1,33 @@
+{
+  "Files": [
+    {
+      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/73c240bf-066d-4ca8-9da8-e73ecaabf2e5.png",
+      "PackagePath": "staticwebassets/uploads/73c240bf-066d-4ca8-9da8-e73ecaabf2e5.png"
+    },
+    {
+      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/c3f3fb1a-67b8-4777-8b83-d106dba36a51.png",
+      "PackagePath": "staticwebassets/uploads/c3f3fb1a-67b8-4777-8b83-d106dba36a51.png"
+    },
+    {
+      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/c9d1337a-6619-4e6b-9a1b-d807543ab19c.png",
+      "PackagePath": "staticwebassets/uploads/c9d1337a-6619-4e6b-9a1b-d807543ab19c.png"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.DemoShopApi.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.build.DemoShopApi.props",
+      "PackagePath": "build\\DemoShopApi.props"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.buildMultiTargeting.DemoShopApi.props",
+      "PackagePath": "buildMultiTargeting\\DemoShopApi.props"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.buildTransitive.DemoShopApi.props",
+      "PackagePath": "buildTransitive\\DemoShopApi.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
