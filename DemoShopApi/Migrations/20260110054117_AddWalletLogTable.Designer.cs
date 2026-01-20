@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DemoShopApi.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
+    [DbContext(typeof(DaigoContext))]
     [Migration("20260110054117_AddWalletLogTable")]
     partial class AddWalletLogTable
     {

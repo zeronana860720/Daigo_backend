@@ -5,17 +5,17 @@ namespace DemoShopApi.Models;
 
 public partial class ChatMessage
 {
-    public int MessageId { get; set; }
+    public int Id { get; set; }
 
-    public int? OrderId { get; set; }
+    public string ChatRoomId { get; set; } = null!;
 
-    public string? SenderId { get; set; }
+    public string SenderUserId { get; set; } = null!;
 
-    public string? MessageText { get; set; }
+    public string Message { get; set; } = null!;
 
-    public DateTime? SentAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 
-    public virtual Order? Order { get; set; }
-
-    public virtual User? Sender { get; set; }
+    public bool IsRead { get; set; }
+    // --- 補上這行 ---
+    public virtual User Sender { get; set; } = null!;
 }

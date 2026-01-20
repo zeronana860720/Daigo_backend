@@ -144,3 +144,9 @@
 /Users/momo/RiderProjects/DemoShopApi/DemoShopApi/obj/Debug/net8.0/DemoShopApi.genruntimeconfig.cache
 /Users/momo/RiderProjects/DemoShopApi/DemoShopApi/obj/Debug/net8.0/ref/DemoShopApi.dll
 /Users/momo/RiderProjects/DemoShopApi/DemoShopApi/bin/Debug/net8.0/DemoShopApi.staticwebassets.runtime.json
+/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/obj/Debug/net8.0/DemoShopApi.sourcelink.json
+/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/bin/Debug/net8.0/Microsoft.Extensions.Diagnostics.Abstractions.dll
+/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/bin/Debug/net8.0/Microsoft.Extensions.Hosting.Abstractions.dll
+/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/bin/Debug/net8.0/Microsoft.Extensions.ObjectPool.dll
+/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/bin/Debug/net8.0/Newtonsoft.Json.dll
+/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/bin/Debug/net8.0/System.Net.WebSockets.WebSocketProtocol.dll

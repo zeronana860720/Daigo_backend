@@ -12,9 +12,9 @@ namespace DemoShopApi.Controllers;
 [ApiController]
 public class WalletController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly DaigoContext _context;
     
-    public WalletController(AppDbContext context)
+    public WalletController(DaigoContext context)
     {
         _context = context;
     }
@@ -56,6 +56,44 @@ public class WalletController : ControllerBase
         return Ok(new
         {
             message = "儲值成功",
+            newBalance = user.Balance
+        });
+    }
+
+    [HttpPost("withdraw")]
+    [Authorize]
+    public async Task<IActionResult> WithDraw([FromBody] WithdrawDto request)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        if (request.Amount <= 0)
+        {
+            return BadRequest(new {message = "請求金額需要大於0"});
+        }
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null) return NotFound();
+        // 檢查餘額 -> 要大於request.amount
+        if ((user.Balance ?? 0)< request.Amount)
+        {
+            return BadRequest(new { message = "餘額不足" });
+        }
+        // 扣除餘額
+        user.Balance -= request.Amount;
+        var log = new WalletLog
+        {
+            Uid = user.Uid,
+            Action = "Withdraw",
+            Amount = -request.Amount,
+            Balance = user.Balance ?? 0,
+            EscrowBalance = user.EscrowBalance ?? 0,
+            CreatedAt = DateTime.Now
+        };
+        _context.Add(log);
+        await _context.SaveChangesAsync();
+        return Ok(new
+        {
+            message = "提現成功",
             newBalance = user.Balance
         });
     }

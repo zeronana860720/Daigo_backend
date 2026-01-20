@@ -16,12 +16,12 @@ namespace DemoShopApi.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly DaigoContext _context;
     private readonly IConfiguration _configuration;
     // _configuration -> 可以去設定裡面拿東西的人
 
     // 透過建構子注入資料庫上下文 (DbContext)
-    public AuthController(AppDbContext context,IConfiguration configuration)
+    public AuthController(DaigoContext context,IConfiguration configuration)
     {
         _context = context;
         _configuration = configuration;
@@ -84,7 +84,8 @@ public class AuthController : ControllerBase
             name = user.Name,
             email = user.Email,
             avatar = user.Avatar,
-            balance = user.Balance
+            balance = user.Balance,
+            userId = user.Uid, 
         });
     }
     [HttpGet("profile")]
@@ -97,7 +98,7 @@ public class AuthController : ControllerBase
         if (userId == null) return Unauthorized();
         // 這一段是驗證請求的合法性
 
-        // 2. 去資料庫找這個人
+        // 2. 去資料庫找這個人  
         var user = await _context.Users.FindAsync(userId);
 
         if (user == null) return NotFound();
