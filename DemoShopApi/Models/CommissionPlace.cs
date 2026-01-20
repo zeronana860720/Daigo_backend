@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DemoShopApi.Models;
 
@@ -18,6 +19,9 @@ public partial class CommissionPlace
     public decimal Longitude { get; set; }
 
     public DateTime? CreatedAt { get; set; }
+    
+    [Column("map_url")]
+    public string? MapUrl { get; set; } 
 
     public virtual ICollection<Commission> Commissions { get; set; } = new List<Commission>();
 }

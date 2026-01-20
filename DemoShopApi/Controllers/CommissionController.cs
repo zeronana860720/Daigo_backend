@@ -72,7 +72,15 @@ namespace DemoShopApi.Controllers
                                                    c.ImageUrl,     // 圖片url
                                                    c.CreatedAt, //這委託建立的時間
                                                    c.Deadline,  // 截止時間
-                                                   c.Status        // 狀態
+                                                   c.Status,       // 狀態
+                                                   // ✨ 關鍵改動：透過 Place 導覽屬性抓取經緯度
+                                                   // 假設你在 C# Model 中將該關聯屬性命名為 Place
+                                                   Latitude = c.Place != null ? c.Place.Latitude : (decimal?)null,
+                                                   Longitude = c.Place != null ? c.Place.Longitude : (decimal?)null,
+                                                   name = c.Place != null ? c.Place.Name : null,
+                                                   // 也可以順便抓取格式化地址
+                                                   FullAddress = c.Place != null ? c.Place.FormattedAddress : c.Location,
+                                                   MapUrl = c.Place != null ? c.Place.MapUrl : null
                                                }).FirstOrDefaultAsync();
             if (Commission==null) {
                 return NotFound(

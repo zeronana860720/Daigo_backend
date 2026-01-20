@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "cEr3DUQdTJB9nNLTntcyrAJQzWbx+oOq/CBT9uHlgoc=",
+  "Hash": "1lc0IRWwm8xjPXtKLMVFPveWTYL5w5KV2P7eXxlKxHQ=",
   "Source": "DemoShopApi",
   "BasePath": "_content/DemoShopApi",
   "Mode": "Default",
@@ -72,6 +72,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/uploads/c9d1337a-6619-4e6b-9a1b-d807543ab19c.png"
+    },
+    {
+      "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/NyPerfectCheese.png",
+      "SourceId": "DemoShopApi",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/",
+      "BasePath": "_content/DemoShopApi",
+      "RelativePath": "uploads/NyPerfectCheese.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/NyPerfectCheese.png"
     }
   ]
 }
