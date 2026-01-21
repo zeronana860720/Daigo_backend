@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "1lc0IRWwm8xjPXtKLMVFPveWTYL5w5KV2P7eXxlKxHQ=",
+  "Hash": "vG9QXSGAq8ilf+6ncXiDOIh6SFd78MMkM8Ved3h+adM=",
   "Source": "DemoShopApi",
   "BasePath": "_content/DemoShopApi",
   "Mode": "Default",
@@ -72,6 +72,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/uploads/c9d1337a-6619-4e6b-9a1b-d807543ab19c.png"
+    },
+    {
+      "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/kawa.png",
+      "SourceId": "DemoShopApi",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/",
+      "BasePath": "_content/DemoShopApi",
+      "RelativePath": "uploads/kawa.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/kawa.png"
     },
     {
       "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/NyPerfectCheese.png",

@@ -17,6 +17,10 @@
       "PackagePath": "staticwebassets/uploads/c9d1337a-6619-4e6b-9a1b-d807543ab19c.png"
     },
     {
+      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/kawa.png",
+      "PackagePath": "staticwebassets/uploads/kawa.png"
+    },
+    {
       "Id": "obj/Debug/net8.0/staticwebassets/msbuild.DemoShopApi.Microsoft.AspNetCore.StaticWebAssets.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
     },
