@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "vG9QXSGAq8ilf+6ncXiDOIh6SFd78MMkM8Ved3h+adM=",
+  "Hash": "4h5qu4xpMIEYlnTZOwcYikntZXcZtjUvATNj1VPupA0=",
   "Source": "DemoShopApi",
   "BasePath": "_content/DemoShopApi",
   "Mode": "Default",
@@ -34,6 +34,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/uploads/73c240bf-066d-4ca8-9da8-e73ecaabf2e5.png"
+    },
+    {
+      "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/917fe253-b46c-4df2-8fbd-ed7696b83865.webp",
+      "SourceId": "DemoShopApi",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/",
+      "BasePath": "_content/DemoShopApi",
+      "RelativePath": "uploads/917fe253-b46c-4df2-8fbd-ed7696b83865.webp",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/917fe253-b46c-4df2-8fbd-ed7696b83865.webp"
     },
     {
       "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/c3f3fb1a-67b8-4777-8b83-d106dba36a51.png",

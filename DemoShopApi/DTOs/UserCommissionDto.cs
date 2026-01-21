@@ -15,5 +15,7 @@
         public bool CanEdit { get; set; }
         public bool CanViewDetail { get; set; }
         public bool CanViewShipping { get; set; }
+        
+        public string Location { get; set; } // ✨ 新增這行
     }
 }

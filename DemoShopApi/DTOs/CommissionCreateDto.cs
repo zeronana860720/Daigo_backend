@@ -29,6 +29,17 @@ namespace DemoShopApi.DTOs
 
         [Required(ErrorMessage = "請填寫地點")]
         public string Location { get; set; } = null!;
+        
+        // google-map用的欄位
+        [Required(ErrorMessage = "請選擇幣別")]
+        public string Currency { get; set; } = "TWD"; // ✨ 新增幣別
+
+        // ✨ 修正命名：改為跟前端 axios 傳出的 key 一致 (小寫加底線)
+        public string? google_place_id { get; set; } 
+        public string? formatted_address { get; set; }
+        public decimal? latitude { get; set; }
+        public decimal? longitude { get; set; }
+    
         public IFormFile? Image { get; set; }
     }
 }

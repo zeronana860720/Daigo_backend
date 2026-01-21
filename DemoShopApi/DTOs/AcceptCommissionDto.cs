@@ -1,6 +1,6 @@
 ﻿namespace DemoShopApi.DTOs
 {
-    public class AceiptCommissionManageDto
+    public class AcceptCommissionManageDto
     {
         public string ServiceCode { get; set; }
         public string Title { get; set; }

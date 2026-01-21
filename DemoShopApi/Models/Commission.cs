@@ -40,6 +40,8 @@ public partial class Commission
     public int? FailCount { get; set; }
 
     public int? PlaceId { get; set; }
+    // 貨幣欄位
+    public string Currency { get; set; } = "TWD";
 
     public virtual ICollection<CommissionHistory> CommissionHistories { get; set; } = new List<CommissionHistory>();
 

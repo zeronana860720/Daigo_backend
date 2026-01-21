@@ -31,7 +31,7 @@ namespace DemoShopApi.Controllers
         { 
             var commissions = await _proxyContext.Commissions
                                                 .Where(u=>u.Status == "待接單")
-                                                .OrderByDescending(u=>u.UpdatedAt) //由大到小時間抓
+                                                .OrderBy(u=>u.Deadline) //由大到小時間抓
                                                 .Select(u=> new 
                                                 { 
                                                 u.ServiceCode,
