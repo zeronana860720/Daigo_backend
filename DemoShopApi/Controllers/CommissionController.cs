@@ -42,7 +42,8 @@ namespace DemoShopApi.Controllers
                                                 u.Category,
                                                 u.ImageUrl,
                                                 u.Deadline,
-                                                u.Status
+                                                u.Status,
+                                                u.Currency,
                                                 }).ToListAsync();
 
             return Ok(new
