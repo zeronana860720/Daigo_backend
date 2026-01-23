@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "4h5qu4xpMIEYlnTZOwcYikntZXcZtjUvATNj1VPupA0=",
+  "Hash": "gZjZJ8qPzJqKFaUfF3TBtkQHTVQ+/l2ffBl7Noozo0w=",
   "Source": "DemoShopApi",
   "BasePath": "_content/DemoShopApi",
   "Mode": "Default",
@@ -8,19 +8,38 @@
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [
     {
-      "Name": "DemoShopApi/wwwroot",
+      "Name": "DemoShopApi\\wwwroot",
       "Source": "DemoShopApi",
-      "ContentRoot": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/",
+      "ContentRoot": "D:\\Daigo_test\\DemoShopApi\\wwwroot\\",
       "BasePath": "_content/DemoShopApi",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/73c240bf-066d-4ca8-9da8-e73ecaabf2e5.png",
+      "Identity": "D:\\Daigo_test\\DemoShopApi\\wwwroot\\index.html",
       "SourceId": "DemoShopApi",
       "SourceType": "Discovered",
-      "ContentRoot": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/",
+      "ContentRoot": "D:\\Daigo_test\\DemoShopApi\\wwwroot\\",
+      "BasePath": "_content/DemoShopApi",
+      "RelativePath": "index.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\index.html"
+    },
+    {
+      "Identity": "D:\\Daigo_test\\DemoShopApi\\wwwroot\\uploads\\73c240bf-066d-4ca8-9da8-e73ecaabf2e5.png",
+      "SourceId": "DemoShopApi",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\Daigo_test\\DemoShopApi\\wwwroot\\",
       "BasePath": "_content/DemoShopApi",
       "RelativePath": "uploads/73c240bf-066d-4ca8-9da8-e73ecaabf2e5.png",
       "AssetKind": "All",
@@ -33,32 +52,13 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot/uploads/73c240bf-066d-4ca8-9da8-e73ecaabf2e5.png"
+      "OriginalItemSpec": "wwwroot\\uploads\\73c240bf-066d-4ca8-9da8-e73ecaabf2e5.png"
     },
     {
-      "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/917fe253-b46c-4df2-8fbd-ed7696b83865.webp",
+      "Identity": "D:\\Daigo_test\\DemoShopApi\\wwwroot\\uploads\\c3f3fb1a-67b8-4777-8b83-d106dba36a51.png",
       "SourceId": "DemoShopApi",
       "SourceType": "Discovered",
-      "ContentRoot": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/",
-      "BasePath": "_content/DemoShopApi",
-      "RelativePath": "uploads/917fe253-b46c-4df2-8fbd-ed7696b83865.webp",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "PreferTarget",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot/uploads/917fe253-b46c-4df2-8fbd-ed7696b83865.webp"
-    },
-    {
-      "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/c3f3fb1a-67b8-4777-8b83-d106dba36a51.png",
-      "SourceId": "DemoShopApi",
-      "SourceType": "Discovered",
-      "ContentRoot": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/",
+      "ContentRoot": "D:\\Daigo_test\\DemoShopApi\\wwwroot\\",
       "BasePath": "_content/DemoShopApi",
       "RelativePath": "uploads/c3f3fb1a-67b8-4777-8b83-d106dba36a51.png",
       "AssetKind": "All",
@@ -71,13 +71,13 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot/uploads/c3f3fb1a-67b8-4777-8b83-d106dba36a51.png"
+      "OriginalItemSpec": "wwwroot\\uploads\\c3f3fb1a-67b8-4777-8b83-d106dba36a51.png"
     },
     {
-      "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/c9d1337a-6619-4e6b-9a1b-d807543ab19c.png",
+      "Identity": "D:\\Daigo_test\\DemoShopApi\\wwwroot\\uploads\\c9d1337a-6619-4e6b-9a1b-d807543ab19c.png",
       "SourceId": "DemoShopApi",
       "SourceType": "Discovered",
-      "ContentRoot": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/",
+      "ContentRoot": "D:\\Daigo_test\\DemoShopApi\\wwwroot\\",
       "BasePath": "_content/DemoShopApi",
       "RelativePath": "uploads/c9d1337a-6619-4e6b-9a1b-d807543ab19c.png",
       "AssetKind": "All",
@@ -90,13 +90,13 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot/uploads/c9d1337a-6619-4e6b-9a1b-d807543ab19c.png"
+      "OriginalItemSpec": "wwwroot\\uploads\\c9d1337a-6619-4e6b-9a1b-d807543ab19c.png"
     },
     {
-      "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/kawa.png",
+      "Identity": "D:\\Daigo_test\\DemoShopApi\\wwwroot\\uploads\\kawa.png",
       "SourceId": "DemoShopApi",
       "SourceType": "Discovered",
-      "ContentRoot": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/",
+      "ContentRoot": "D:\\Daigo_test\\DemoShopApi\\wwwroot\\",
       "BasePath": "_content/DemoShopApi",
       "RelativePath": "uploads/kawa.png",
       "AssetKind": "All",
@@ -109,13 +109,13 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot/uploads/kawa.png"
+      "OriginalItemSpec": "wwwroot\\uploads\\kawa.png"
     },
     {
-      "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/NyPerfectCheese.png",
+      "Identity": "D:\\Daigo_test\\DemoShopApi\\wwwroot\\uploads\\NyPerfectCheese.png",
       "SourceId": "DemoShopApi",
       "SourceType": "Discovered",
-      "ContentRoot": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/",
+      "ContentRoot": "D:\\Daigo_test\\DemoShopApi\\wwwroot\\",
       "BasePath": "_content/DemoShopApi",
       "RelativePath": "uploads/NyPerfectCheese.png",
       "AssetKind": "All",
@@ -128,7 +128,7 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot/uploads/NyPerfectCheese.png"
+      "OriginalItemSpec": "wwwroot\\uploads\\NyPerfectCheese.png"
     }
   ]
 }

@@ -24,4 +24,6 @@ public partial class User
     public string? Avatar { get; set; }
 
     public string? Address { get; set; }
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
 }

@@ -69,6 +69,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddSignalR();
 builder.Services.AddScoped<CommissionService>();
 builder.Services.AddScoped<CreateCommissionCode>();
+// 註冊 NotificationWorker 為背景服務
+builder.Services.AddHostedService<NotificationWorker>();
 
 var app = builder.Build();
 
@@ -91,5 +93,7 @@ app.UseStaticFiles();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/chathub");
+app.MapHub<NotificationHub>("/notificationHub");
+
 
 app.Run();
