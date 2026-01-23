@@ -11,6 +11,10 @@
         public DateTime? CreatedAt { get; set; }
         public string? ImageUrl { get; set; }
         public decimal PlatformFee { get; set; }
+        
+        
+        // 新增幣別
+        public string Currency { get; set; }
 
 
         public bool CanUpdateReceipt { get; set; }

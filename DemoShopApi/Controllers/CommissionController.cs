@@ -26,6 +26,7 @@ namespace DemoShopApi.Controllers
         }
 
         //委託 待接單所有 展示
+        // done
         [HttpGet]
         public async Task<IActionResult> GetCommissionsList() 
         { 
@@ -54,6 +55,7 @@ namespace DemoShopApi.Controllers
         }
 
         //點擊委託之後 顯示的單筆詳細資料
+        //done
         [HttpGet("{ServiceCode}")]
         public async Task<IActionResult> GetDetail(string ServiceCode) 
         {

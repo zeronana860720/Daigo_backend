@@ -17,5 +17,7 @@
         public bool CanViewShipping { get; set; }
         
         public string Location { get; set; } // ✨ 新增這行
+        
+        public string Currency { get; set; } // ✨ 新增這這一行，用來存放幣別
     }
 }

@@ -21,6 +21,7 @@ namespace DemoShopApi.Controllers
         {
             _proxyContext = proxyContext;
         }
+        // Done
         [HttpGet("Commission")]
         public async Task<IActionResult> UserManage()
         {
@@ -53,7 +54,8 @@ namespace DemoShopApi.Controllers
 
                     CanEdit = c.Status == "審核中" || c.Status == "審核失敗",
                     CanViewDetail = c.Status == "已出貨",
-                    CanViewShipping = c.Status == "已寄出"
+                    CanViewShipping = c.Status == "已寄出",
+                    Currency = c.Currency,
                 }).ToListAsync();
 
             return Ok(commissions);
@@ -63,9 +65,9 @@ namespace DemoShopApi.Controllers
 
 
         }
-
-        [HttpGet("Commission/MyAceipt")]
-        public async Task<IActionResult> AceiptManage()
+        // Done
+        [HttpGet("Commission/MyAccept")]
+        public async Task<IActionResult> AcceptManage()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
                      ?? "102";// 接單者
@@ -81,16 +83,16 @@ namespace DemoShopApi.Controllers
                         where o.Status == "PENDING" && o.SellerId == userId
                         select new AcceptCommissionManageDto
                         {
-                                ServiceCode = p.ServiceCode,
+                            ServiceCode = p.ServiceCode,
                             Title = p.Title,
                             Status = p.Status,
                             Quantity = p.Quantity??0,
                             Price = p.Price??0,
-                            TotalAmount = ((p.Price??0) * (p.Quantity??0)) + (p.Fee)??0,
+                            TotalAmount = ((p.Price??0) * (p.Quantity??0)),
+                            Currency = p.Currency,  
                             PlatformFee = p.Fee??0,
                             CreatedAt = o.CreatedAt,
                             ImageUrl = p.ImageUrl,
-
                             CanUpdateReceipt = o.Status == "PENDING",
                             CanUpdateShip = o.Status == "PENDING" && p.Status =="出貨中",
                             CanViewReceipt = p.Status == "出貨中",//可以看自己上船的明細
