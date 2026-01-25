@@ -147,7 +147,7 @@ namespace API.Controllers
             }
         }
 
-        //編輯委託
+        //編輯委託 -> postpone
         [HttpPut("{ServiceCode}/Edit")]
         public async Task<IActionResult> EditCommission(string ServiceCode, [FromForm] CommissionEditDto dto)
         {
@@ -201,7 +201,7 @@ namespace API.Controllers
             });
         }
 
-        //接受委託
+        //接受委託-> done 
         [HttpPost("{ServiceCode}/accept")]
         public async Task<IActionResult> acceptCommission(string ServiceCode)
         {
@@ -562,38 +562,51 @@ namespace API.Controllers
             });
         }
 
-        //完成訂單 (買家)
+        //完成訂單 (買家) -> ongoing
         [HttpPost("{ServiceCode}/complete")]
         public async Task<IActionResult> CompleteCommission(string ServiceCode)
         {
+            // 從token找id
             var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "101";
-
+            
+            /*
+             * 開啟交易
+             * 確保兩筆更動都成功
+             * 1.更新資料庫狀態
+             * 2.撥款
+             */
             using var tx = await _proxyContext.Database.BeginTransactionAsync();
-
+            
+            // 確認委託是否存在
             var commission = await _proxyContext.Commissions
                 .FirstOrDefaultAsync(c => c.ServiceCode == ServiceCode);
 
             if (commission == null)
                 return NotFound("委託不存在");
-
+            // 身份認證
             if (commission.CreatorId != userId)
                 return Forbid("你不是此委託的建立者");
-
+            // 判斷狀態
             if (commission.Status != "已寄出")
                 return BadRequest("目前狀態不可完成");
-
+            // 撈commissionOrder表格
+            // 確保委託跟訂單是對應
             var order = await _proxyContext.CommissionOrders
                 .FirstOrDefaultAsync(o => o.CommissionId == commission.CommissionId);
-
+            // 委託不存在或是還在pending
             if (order == null || order.Status != "PENDING")
                 return BadRequest("訂單紀錄不存在或訂單尚未完成寄貨");
-
-            var oldStatus = commission.Status; //已寄出 狀態紀錄
+            
+            var oldStatus = commission.Status; 
+            //已寄出 狀態紀錄
+            
+            // 臨時的小帳本
             var paymentInfo = new
             {
-                orderAmount = order.Amount,
-                fee = commission.Fee,
-                releaseToSeller = order.Amount - commission.Fee
+                // orderAmount = order.Amount, -> 暫時先放著更改邏輯
+                payoutAmount = commission.Fee, // 把這邊改成給小幫手的錢
+                // releaseToSeller = order.Amount - commission.Fee
+                currency = commission.Currency,
             };
 
             // 狀態更新
@@ -604,7 +617,30 @@ namespace API.Controllers
 
             // 金流
             var paymentService = new CommissionPaymentService(_proxyContext);
+            // 呼叫依賴式注入-> 去撥款
             await paymentService.ReleaseToSellerAsync(commission.CommissionId);
+            
+            // 獲取賣家資訊 (為了拿他目前的 Balance 餘額)
+            // 邏輯：透過 order 找到 SellerId，再從資料庫找這個使用者
+            var seller = await _proxyContext.Users.FirstOrDefaultAsync(u => u.Uid == order.SellerId);
+
+            if (seller != null) // 安全起見檢查一下賣家是否存在
+            {
+                // 2. ✨ 建立賣家的錢包紀錄
+                var walletLog = new WalletLog
+                {
+                    Uid = seller.Uid,
+                    Action = "CommissionIncome",       // 動作：委託收入
+                    Amount = commission.Fee??0m,           // 收入金額 (正值)
+                    Balance = seller.Balance ?? 0m,     // 撥款後的新餘額
+                    EscrowBalance = 0m,                // 錢已經從代管轉出，所以代管餘額為 0
+                    ServiceCode = commission.ServiceCode,
+                    Description = $"委託完成收入：{commission.Title}", // 清楚的描述
+                    CreatedAt = DateTime.Now
+                };
+
+                _proxyContext.WalletLogs.Add(walletLog);
+            }
 
             // History
             var oldDiff = new Dictionary<string, object>();
@@ -614,14 +650,16 @@ namespace API.Controllers
                 oldDiff["status"] = oldStatus;
                 newDiff["status"] = commission.Status;
             }
+            // 把剛剛的小帳本存進去
             newDiff["payment"] = paymentInfo;
 
 
-
+            // 設定json格式,確保中文不會亂碼
             var jsonOptions = new JsonSerializerOptions
             {
                 Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
             };
+            // 只要有任何變動,新增一筆紀錄
             if (oldDiff.Any())
             {
                 _proxyContext.CommissionHistories.Add(new CommissionHistory
@@ -719,7 +757,7 @@ namespace API.Controllers
             return Ok(new { success = true, message = "訂單已取消並退款" });
         }
         
-        // 刪除委託
+        // 刪除委託-> done 
         [HttpDelete("{serviceCode}")]
         public async Task<IActionResult> DeleteCommission(string serviceCode)
         {
