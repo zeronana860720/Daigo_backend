@@ -45,7 +45,8 @@ namespace DemoShopApi.services
                 throw new Exception("找不到接委託人");
 
             // 撥款
-            seller.Balance += (commission.EscrowAmount-commission.Fee); 
+            // 修改一下邏輯
+            seller.Balance += commission.Fee; 
             commission.EscrowAmount = 0;
         }
 
