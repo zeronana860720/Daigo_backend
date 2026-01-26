@@ -121,7 +121,7 @@ namespace DemoShopApi.Controllers
             return Ok(await _RVservice.GetPendingCommissionsForReview());
         }
 
-        // 審核
+        // 審核-> done
         [HttpPost("Review/Pending")]
         public async Task<IActionResult> Review([FromBody] ReviewRequestDto req)
         {

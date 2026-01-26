@@ -18,6 +18,9 @@
         
         public string Location { get; set; } // ✨ 新增這行
         
-        public string Currency { get; set; } // ✨ 新增這這一行，用來存放幣別
+        public string Currency { get; set; } // 用來存放幣別
+        
+        // 新增這個欄位來存放審核理由
+        public string? Reason { get; set; }
     }
 }
