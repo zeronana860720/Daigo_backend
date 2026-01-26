@@ -48,7 +48,6 @@ public class AuthController : ControllerBase
             PasswordHash = passwordHash,
             Phone = request.Phone,
             Balance = 0,
-            EscrowBalance = 0,
             CreatedAt = DateTime.Now
         };
 
@@ -185,8 +184,7 @@ public class AuthController : ControllerBase
         if (user == null) return NotFound();
         return Ok(new
             {
-                availableBalance=user.Balance,
-                escrowBalance=user.EscrowBalance
+                availableBalance=user.Balance
             }
         );
     }

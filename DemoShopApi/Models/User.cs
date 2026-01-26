@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using DemoShopApi.Data;
 
 namespace DemoShopApi.Models;
 
@@ -17,8 +18,6 @@ public partial class User
 
     public decimal? Balance { get; set; }
 
-    public decimal? EscrowBalance { get; set; }
-
     public DateTime? CreatedAt { get; set; }
 
     public string? Avatar { get; set; }
@@ -27,4 +26,8 @@ public partial class User
     
     // 失敗幾次就讓他帳號失效
     public DateTime? DisabledUntil { get; set; }
+    public virtual ICollection<BalanceLog> BalanceLogs { get; set; } = new List<BalanceLog>();
+
+
+    public virtual ICollection<DepositOrder> DepositOrders { get; set; } = new List<DepositOrder>();
 }

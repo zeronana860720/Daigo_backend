@@ -1,13 +1,14 @@
-﻿using DemoShopApi.DTOs;
+﻿using DemoShopApi.Data;
+using DemoShopApi.DTOs;
 using DemoShopApi.Models;
 using DemoShopApi.services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text.Json;
-using DemoShopApi.Data;
-using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers
 {
@@ -59,8 +60,6 @@ namespace API.Controllers
             using var transaction = await _proxyContext.Database.BeginTransactionAsync();
             try
             {
-                // 5. 扣錢
-                user.Balance -= totalPriceTwd;
 
                 // 6. 處理圖片路徑
                 string? imageUrl = null;
@@ -98,34 +97,54 @@ namespace API.Controllers
                         CreatedAt = DateTime.Now
                     }
                 };
-
-                // 8. ✨ 產生 ServiceCode (這步跑完，commission.ServiceCode 才有值)
                 await _CreateCode.CreateCommissionCodeAsync(commission);
+                _proxyContext.Commissions.Add(commission);
+                await _proxyContext.SaveChangesAsync(); // 先存一次，確保產生 CommissionId 給第 9 步使用
 
-                // 9. ✨ 建立扣款紀錄日誌 (這時可以使用 commission 的屬性了)
-                var walletLog = new WalletLog
+
+
+                // 9. ✨ 建立log紀錄日誌 
+                decimal? oldBalance = user.Balance ?? 0;
+                decimal finalAmount = totalPriceTwd;
+                // 5. 扣錢
+                user.Balance -= totalPriceTwd;
+                var log = new BalanceLog
                 {
-                    Uid = userId,
-                    Action = "CommissionPay",
-                    Amount = -totalPriceTwd,      // 支出存負值
-                    Balance = user.Balance ?? 0m, // 扣款後的餘額
-                    EscrowBalance = totalPriceTwd,
-                    ServiceCode = commission.ServiceCode,
-                    Description = commission.Title, // 成功抓到 Title 囉！
+                    UserId = userId,
+                    Action = "Spend",  //deposit：儲值  spend：支出（下委託）  refund：退款    withdraw：提領 
+                    Amount = finalAmount,
+                    BeforeBalance = oldBalance,
+                    AfterBalance = oldBalance - finalAmount, //order這次訂單廚的金額
+                    RefType = "Commission",  //儲值:deposit 對應refid :order_id     委託:對應commission的 commission_id  
+                    RefId = commission.CommissionId,
                     CreatedAt = DateTime.Now
                 };
 
-                _proxyContext.WalletLogs.Add(walletLog);
-                _proxyContext.Commissions.Add(commission);
+                _proxyContext.BalanceLogs.Add(log);
                 await _proxyContext.SaveChangesAsync();
 
                 // 10. 記錄歷史 (CommissionHistory)
+                var jsonOptions = new JsonSerializerOptions
+                {
+                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                };
                 var history = new CommissionHistory
                 {
                     CommissionId = commission.CommissionId,
                     Action = "CREATE",
                     ChangedBy = userId,
-                    NewData = "建立新委託"
+                    ChangedAt = DateTime.Now,
+                    OldData = null,
+                    NewData = JsonSerializer.Serialize(new
+                    {
+                        commission.Title,
+                        commission.Description,
+                        commission.Price,
+                        commission.Quantity,
+                        commission.Category,
+                        commission.Deadline,
+                        commission.Location,
+                    }, jsonOptions)
                 };
                 _proxyContext.CommissionHistories.Add(history);
                 await _proxyContext.SaveChangesAsync();
@@ -140,10 +159,22 @@ namespace API.Controllers
                 await transaction.CommitAsync();
                 return Ok(new { success = true, data = new { serviceCode = commission.ServiceCode } });
             }
+            //catch (Exception ex)
+            //{
+            //    await transaction.RollbackAsync();
+            //    return StatusCode(500, new { success = false, message = "建立失敗", error = ex.Message });
+            //}
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return StatusCode(500, new { success = false, message = "建立失敗", error = ex.Message });
+                // 這樣寫可以抓到 SQL Server 噴回來的真實錯誤訊息（例如：欄位長度不足、外鍵衝突）
+                var realError = ex.InnerException?.Message ?? ex.Message;
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "建立失敗",
+                    error = realError // <-- 看這裡
+                });
             }
         }
 

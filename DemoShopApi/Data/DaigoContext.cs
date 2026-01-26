@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using DemoShopApi.Models;
+﻿using DemoShopApi.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 
 namespace DemoShopApi.Data;
 
@@ -33,11 +33,87 @@ public partial class DaigoContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<WalletLog> WalletLogs { get; set; }
+    public virtual DbSet<BalanceLog> BalanceLogs { get; set; }
+    public virtual DbSet<DepositOrder> DepositOrders { get; set; }
+
     
     public virtual DbSet<Review> Reviews { get; set; }
 
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<BalanceLog>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__balance___3213E83F1CB802E2");
+
+            entity.ToTable("balance_logs");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Action)
+                .HasMaxLength(20)
+                .HasColumnName("Action");
+            entity.Property(e => e.AfterBalance)
+                .HasColumnType("decimal(15, 2)")
+                .HasColumnName("after_balance");
+            entity.Property(e => e.Amount)
+                .HasColumnType("decimal(15, 2)")
+                .HasColumnName("amount");
+            entity.Property(e => e.BeforeBalance)
+                .HasColumnType("decimal(15, 2)")
+                .HasColumnName("before_balance");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.RefId).HasColumnName("ref_id");
+            entity.Property(e => e.RefType)
+                .HasMaxLength(30)
+                .HasColumnName("ref_type");
+            entity.Property(e => e.UserId)
+                .HasMaxLength(50)
+                .HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.BalanceLogs)
+                .HasForeignKey(d => d.UserId)
+                .HasPrincipalKey(p => p.Uid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_balance_logs_users");
+        });
+        modelBuilder.Entity<DepositOrder>(entity =>
+        {
+            entity.HasKey(e => e.DepositOrderId).HasName("PK__DepositO__0A025BB0ADB85E27");
+
+            entity.ToTable("DepositOrder");
+
+            entity.HasIndex(e => e.OrderNo, "UQ__DepositO__465C81B899E965A8").IsUnique();
+
+            entity.Property(e => e.DepositOrderId).HasColumnName("deposit_order_id");
+            entity.Property(e => e.Amount)
+                .HasColumnType("decimal(15, 2)")
+                .HasColumnName("amount");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.OrderNo)
+                .HasMaxLength(50)
+                .HasColumnName("order_no");
+            entity.Property(e => e.PaidAt)
+                .HasColumnType("datetime")
+                .HasColumnName("paid_at");
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .HasColumnName("status");
+            entity.Property(e => e.UserId)
+                .HasMaxLength(50)
+                .HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.DepositOrders)
+                .HasForeignKey(d => d.UserId)
+                .HasPrincipalKey(p => p.Uid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_DepositOrder_users");
+        });
         modelBuilder.Entity<ChatMessage>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__ChatMess__3214EC07ABE5A5EC");
@@ -80,7 +156,7 @@ public partial class DaigoContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatorId)
-                .HasMaxLength(10)
+                .HasMaxLength(50)
                 .HasColumnName("creator_id");
             entity.Property(e => e.Deadline)
                 .HasColumnType("datetime")
@@ -318,10 +394,6 @@ public partial class DaigoContext : DbContext
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .HasColumnName("email");
-            entity.Property(e => e.EscrowBalance)
-                .HasDefaultValue(0.00m)
-                .HasColumnType("decimal(15, 2)")
-                .HasColumnName("escrow_balance");
             entity.Property(e => e.Name)
                 .HasMaxLength(100)
                 .HasColumnName("name");
