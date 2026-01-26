@@ -57,15 +57,16 @@ namespace DemoShopApi.services
                 CheckChange("Location", commission.Location, dto.Location);
 
                 // 4. 金額重新計算與扣款邏輯
+                var oldBalance = user.Balance;
+                var oldEscrow = commission.EscrowAmount;
                 decimal feeRate = 0.1m; // 10% 手續費
                 decimal newFee = (dto.Price * dto.Quantity) * feeRate;
                 decimal newTotal = Math.Round((dto.Price * dto.Quantity) + newFee, 0, MidpointRounding.AwayFromZero);
 
                 // 計算差額 (新總額 - 舊的押金)
-                var diff = newTotal - (commission.EscrowAmount ?? 0);
-                if (diff > 0 && user.Balance < diff) return (false, "錢包餘額不足，無法支付差額喔 (´;ω;`) ");
-                
-                user.Balance -= diff; // 扣除(或退回)差額
+                var diff = newTotal - (oldEscrow ?? 0);
+         
+
 
                 // 5. 更新委託基本資料
                 commission.Title = dto.Title;
@@ -148,6 +149,42 @@ namespace DemoShopApi.services
                         NewData = JsonSerializer.Serialize(newDiff, jsonOptions)
                     });
                 }
+                if (diff > 0)
+                {
+                    if (user.Balance < diff)
+                    {
+                        return (false, "錢包餘額不足，無法支付差額喔 (´;ω;`) ");
+                    }
+                    user.Balance -= diff;
+                    var log = new BalanceLog
+                    {
+                        UserId = user.Uid,
+                        Action = "EditSpend",  //deposit：儲值  spend：支出（下委託）  refund：退款    withdraw：提領 
+                        Amount = diff,
+                        BeforeBalance = oldBalance,
+                        AfterBalance = user.Balance, //order這次訂單廚的金額
+                        RefType = "Commission",  //儲值:deposit 對應refid :order_id     委託:對應commission的 commission_id  
+                        RefId = commission.CommissionId
+                    };
+                    _ProxyContext.BalanceLogs.Add(log);
+                }
+                else if (diff < 0)
+                {
+                    var refund = Math.Abs(diff); //絕對值不存負數                    
+                    user.Balance += refund;
+                    var log = new BalanceLog
+                    {
+                        UserId = user.Uid,
+                        Action = "EditRefund",  //deposit：儲值  spend：支出（下委託）  refund：退款    withdraw：提領 
+                        Amount = refund,
+                        BeforeBalance = oldBalance,
+                        AfterBalance = user.Balance, //order這次訂單廚的金額
+                        RefType = "Commission",  //儲值:deposit 對應refid :order_id     委託:對應commission的 commission_id  
+                        RefId = commission.CommissionId
+                    };
+                    _ProxyContext.BalanceLogs.Add(log);
+                }
+
 
                 await _ProxyContext.SaveChangesAsync();
                 await transaction.CommitAsync();

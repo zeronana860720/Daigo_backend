@@ -45,7 +45,6 @@ public class WalletController : ControllerBase
             Action = "Deposit",
             Amount = request.Amount,
             Balance = (user.Balance??0)+request.Amount,
-            EscrowBalance = user.EscrowBalance??0,
             CreatedAt = DateTime.Now
             
         };
@@ -86,7 +85,6 @@ public class WalletController : ControllerBase
             Action = "Withdraw",
             Amount = -request.Amount,
             Balance = user.Balance ?? 0,
-            EscrowBalance = user.EscrowBalance ?? 0,
             CreatedAt = DateTime.Now
         };
         _context.Add(log);
