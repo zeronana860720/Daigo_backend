@@ -52,4 +52,6 @@ public partial class Commission
     public virtual ICollection<CommissionShipping> CommissionShippings { get; set; } = new List<CommissionShipping>();
 
     public virtual CommissionPlace? Place { get; set; }
+    
+    public virtual User? User { get; set; } // 這是導覽屬性，讓 Include 可以運作
 }

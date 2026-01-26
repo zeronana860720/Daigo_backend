@@ -24,4 +24,7 @@ public partial class User
     public string? Avatar { get; set; }
 
     public string? Address { get; set; }
+    
+    // 失敗幾次就讓他帳號失效
+    public DateTime? DisabledUntil { get; set; }
 }

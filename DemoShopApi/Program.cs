@@ -94,6 +94,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddSignalR();
 builder.Services.AddScoped<CommissionService>();
 builder.Services.AddScoped<CreateCommissionCode>();
+builder.Services.AddScoped<ReviewService>();
 
 var app = builder.Build();
 

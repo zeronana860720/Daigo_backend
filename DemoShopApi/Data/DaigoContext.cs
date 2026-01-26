@@ -33,6 +33,8 @@ public partial class DaigoContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<WalletLog> WalletLogs { get; set; }
+    
+    public virtual DbSet<Review> Reviews { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -117,6 +119,10 @@ public partial class DaigoContext : DbContext
             entity.HasOne(d => d.Place).WithMany(p => p.Commissions)
                 .HasForeignKey(d => d.PlaceId)
                 .HasConstraintName("FK_Commission_Place");
+            entity.HasOne(d => d.User)           // Commission 有一個 User
+                .WithMany()                      // 一個 User 可以有多個 Commission
+                .HasForeignKey(d => d.CreatorId) // 這是關鍵！連結的外鍵是 CreatorId
+                .HasPrincipalKey(u => u.Uid);    // 對應到 User 表的 Uid 欄位
         });
 
         modelBuilder.Entity<CommissionHistory>(entity =>
@@ -325,6 +331,7 @@ public partial class DaigoContext : DbContext
             entity.Property(e => e.Phone)
                 .HasMaxLength(20)
                 .HasColumnName("phone");
+            entity.Property(e => e.DisabledUntil).HasColumnName("disabled_until");
         });
 
         modelBuilder.Entity<WalletLog>(entity =>
@@ -338,6 +345,42 @@ public partial class DaigoContext : DbContext
             entity.Property(e => e.Uid).HasMaxLength(450);
             entity.Property(e => e.ServiceCode).HasColumnName("service_code");
             entity.Property(e => e.Description).HasColumnName("description");
+        });
+        
+        modelBuilder.Entity<Review>(entity =>
+        {
+            // 指定對應的資料表名稱（大小寫要跟 SQL 一致喔！）
+            entity.ToTable("Review");
+
+            // 設定主鍵
+            entity.HasKey(e => e.ReviewId);
+            entity.Property(e => e.ReviewId).HasColumnName("review_id");
+
+            // 設定欄位細節
+            entity.Property(e => e.TargetType)
+                .HasMaxLength(20)
+                .HasColumnName("target_type");
+
+            entity.Property(e => e.TargetId).HasColumnName("target_id");
+
+            // entity.Property(e => e.TargetCode)
+            //     .HasMaxLength(30)
+            //     .HasColumnName("TargetCode");
+
+            entity.Property(e => e.ReviewerUid)
+                .HasMaxLength(50)
+                .HasColumnName("reviewer_uid");
+
+            entity.Property(e => e.Result).HasColumnName("result");
+
+            entity.Property(e => e.Reason)
+                .HasMaxLength(255)
+                .HasColumnName("reason");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
         });
 
         OnModelCreatingPartial(modelBuilder);
