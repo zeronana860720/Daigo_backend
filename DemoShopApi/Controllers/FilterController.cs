@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using DemoShopApi.Models;
+using Microsoft.EntityFrameworkCore;
 namespace API大專.Controllers
 {
     [Route("api/[controller]")]
@@ -18,40 +19,44 @@ namespace API大專.Controllers
         // 根據關鍵字搜尋委託單 (搜尋 Title, Description, Category, Location)
         [HttpGet("search")]
         public IActionResult SearchCommissions(
-        [FromQuery] string? keyword,      // 關鍵字 (Title, Description...)
-        [FromQuery] string? location,     // 地區篩選
-        [FromQuery] decimal? minPrice,    // 價格下限
-        [FromQuery] decimal? maxPrice,    // 價格上限
-        [FromQuery] string? sort = null   // 多重排序 (如: "price_asc,deadline_desc"
- )
+            [FromQuery] string? keyword,
+            [FromQuery] string? location,
+            [FromQuery] decimal? minPrice,
+            [FromQuery] decimal? maxPrice,
+            [FromQuery] string? sort = null
+        )
         {
-            // 1. 取得基礎查詢 (過濾掉狀態不是待接單的)
-            var query = _context.Commissions.Where(c => c.Status == "待接單");
+            // 1. 取得基礎查詢，並使用 Include 預先載入地點資料表
+            // 註：請確保 Commission Model 裡有 public virtual CommissionPlace? Place { get; set; } 這樣的導覽屬性
+            var query = _context.Commissions
+                .Include(c => c.Place) // ✨ 連接到 Commission_Place 表
+                .Where(c => c.Status == "待接單");
 
-            // 2. 如果有輸入關鍵字，則進行多欄位比對
+            // 2. 關鍵字搜尋 (同步更新：關鍵字也能搜到地址)
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 keyword = keyword.Trim();
-
-                // 只要任一欄位包含關鍵字即可 (OR 邏輯)
                 query = query.Where(c =>
                     (c.Title != null && c.Title.Contains(keyword)) ||
                     (c.Description != null && c.Description.Contains(keyword)) ||
                     (c.Category != null && c.Category.Contains(keyword)) ||
-                    (c.Location != null && c.Location.Contains(keyword))
+                    // ✨ 修改：關鍵字現在也比對 Commission_Place 的地址
+                    (c.Place != null && c.Place.FormattedAddress.Contains(keyword))
                 );
             }
 
-            // 3. 條件篩選 (AND 邏輯)
+            // 3. 地點篩選 (核心修改：依照 Commission_Place 的 formatted_address 搜尋)
             if (!string.IsNullOrWhiteSpace(location))
             {
-                query = query.Where(c => c.Location != null && c.Location.Contains(location));
+                // ✨ 修改：不再比對 c.Location，而是比對關聯表的地址
+                query = query.Where(c => c.Place != null && c.Place.FormattedAddress.Contains(location));
             }
 
+            // 4. 價格篩選 (維持不變)
             if (minPrice.HasValue) query = query.Where(c => c.Price >= minPrice.Value);
             if (maxPrice.HasValue) query = query.Where(c => c.Price <= maxPrice.Value);
 
-            // 4. 多重排序邏輯 (根據使用者點選先後順序)
+            // 5. 多重排序邏輯 (維持不變)
             var sortOrders = sort?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
             IOrderedQueryable<Commission>? orderedQuery = null;
 
@@ -59,7 +64,6 @@ namespace API大專.Controllers
             {
                 var action = s.Trim().ToLower();
                 bool isFirst = (orderedQuery == null);
-
                 switch (action)
                 {
                     case "price_asc":
@@ -69,28 +73,24 @@ namespace API大專.Controllers
                         orderedQuery = isFirst ? query.OrderByDescending(c => c.Price) : orderedQuery!.ThenByDescending(c => c.Price);
                         break;
                     case "deadline_asc":
-                        // 使用 ?? 保底避免 Null 警告，且只比日期部分
-                        orderedQuery = isFirst
-                            ? query.OrderBy(c => (c.Deadline ?? DateTime.MaxValue).Date)
-                            : orderedQuery!.ThenBy(c => (c.Deadline ?? DateTime.MaxValue).Date);
+                        orderedQuery = isFirst ? query.OrderBy(c => (c.Deadline ?? DateTime.MaxValue).Date) : orderedQuery!.ThenBy(c => (c.Deadline ?? DateTime.MaxValue).Date);
                         break;
                     case "deadline_desc":
-                        orderedQuery = isFirst
-                            ? query.OrderByDescending(c => (c.Deadline ?? DateTime.MinValue).Date)
-                            : orderedQuery!.ThenByDescending(c => (c.Deadline ?? DateTime.MinValue).Date);
+                        orderedQuery = isFirst ? query.OrderByDescending(c => (c.Deadline ?? DateTime.MinValue).Date) : orderedQuery!.ThenBy(c => (c.Deadline ?? DateTime.MinValue).Date);
                         break;
                 }
             }
 
-            // 5. 最終排序補償與執行 (若無選則依新舊排)
             var finalQuery = orderedQuery ?? query.OrderByDescending(c => c.CreatedAt);
 
+            // 6. 最終投影 (將地址資訊也丟給前端)
             var results = finalQuery.Select(c => new
             {
                 c.Title,
                 c.Price,
                 c.Quantity,
-                c.Location,
+                // ✨ 修改：將關聯表的 formatted_address 當作 location 傳回前端
+                Location = c.Place != null ? c.Place.FormattedAddress : c.Location,
                 c.Category,
                 c.ImageUrl,
                 c.Deadline,
