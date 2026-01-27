@@ -13,6 +13,10 @@
       "PackagePath": "staticwebassets/receipts/dba42ae4-6324-4239-a496-f2cf47b43485.png"
     },
     {
+      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/119c5352-034c-468c-9601-d1595e3df5f9.png",
+      "PackagePath": "staticwebassets/uploads/119c5352-034c-468c-9601-d1595e3df5f9.png"
+    },
+    {
       "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/150fabe7-17bc-4e8d-a767-ecee977ac70c.png",
       "PackagePath": "staticwebassets/uploads/150fabe7-17bc-4e8d-a767-ecee977ac70c.png"
     },
@@ -37,8 +41,16 @@
       "PackagePath": "staticwebassets/uploads/5fc51fd8-d973-4cd1-bcb9-6296d2149548.png"
     },
     {
+      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/6ebc2b43-9ea6-415c-959a-f51622318701.png",
+      "PackagePath": "staticwebassets/uploads/6ebc2b43-9ea6-415c-959a-f51622318701.png"
+    },
+    {
       "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/73c240bf-066d-4ca8-9da8-e73ecaabf2e5.png",
       "PackagePath": "staticwebassets/uploads/73c240bf-066d-4ca8-9da8-e73ecaabf2e5.png"
+    },
+    {
+      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/77b90e10-9202-4695-bf6a-4900e4361918.png",
+      "PackagePath": "staticwebassets/uploads/77b90e10-9202-4695-bf6a-4900e4361918.png"
     },
     {
       "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/836cd2a5-1a21-4521-b846-a5bc8306e34d.png",
@@ -67,6 +79,10 @@
     {
       "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/c9d1337a-6619-4e6b-9a1b-d807543ab19c.png",
       "PackagePath": "staticwebassets/uploads/c9d1337a-6619-4e6b-9a1b-d807543ab19c.png"
+    },
+    {
+      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/fede65e3-7a24-4a13-8db1-1335ef1ee318.png",
+      "PackagePath": "staticwebassets/uploads/fede65e3-7a24-4a13-8db1-1335ef1ee318.png"
     },
     {
       "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/kawa.png",

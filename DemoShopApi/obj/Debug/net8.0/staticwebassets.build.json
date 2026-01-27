@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "hgt9Uz4TwOpIlR9W4rozQ3BpG7GYuuUke4o49Uo1zD0=",
+  "Hash": "ZZE4KP5QzPpzr4slIMBplSzYZF3yILEZBfjKS5J2R54=",
   "Source": "DemoShopApi",
   "BasePath": "_content/DemoShopApi",
   "Mode": "Default",
@@ -72,6 +72,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/receipts/dba42ae4-6324-4239-a496-f2cf47b43485.png"
+    },
+    {
+      "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/119c5352-034c-468c-9601-d1595e3df5f9.png",
+      "SourceId": "DemoShopApi",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/",
+      "BasePath": "_content/DemoShopApi",
+      "RelativePath": "uploads/119c5352-034c-468c-9601-d1595e3df5f9.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/119c5352-034c-468c-9601-d1595e3df5f9.png"
     },
     {
       "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/150fabe7-17bc-4e8d-a767-ecee977ac70c.png",
@@ -188,6 +207,25 @@
       "OriginalItemSpec": "wwwroot/uploads/5fc51fd8-d973-4cd1-bcb9-6296d2149548.png"
     },
     {
+      "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/6ebc2b43-9ea6-415c-959a-f51622318701.png",
+      "SourceId": "DemoShopApi",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/",
+      "BasePath": "_content/DemoShopApi",
+      "RelativePath": "uploads/6ebc2b43-9ea6-415c-959a-f51622318701.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/6ebc2b43-9ea6-415c-959a-f51622318701.png"
+    },
+    {
       "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/73c240bf-066d-4ca8-9da8-e73ecaabf2e5.png",
       "SourceId": "DemoShopApi",
       "SourceType": "Discovered",
@@ -205,6 +243,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/uploads/73c240bf-066d-4ca8-9da8-e73ecaabf2e5.png"
+    },
+    {
+      "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/77b90e10-9202-4695-bf6a-4900e4361918.png",
+      "SourceId": "DemoShopApi",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/",
+      "BasePath": "_content/DemoShopApi",
+      "RelativePath": "uploads/77b90e10-9202-4695-bf6a-4900e4361918.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/77b90e10-9202-4695-bf6a-4900e4361918.png"
     },
     {
       "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/836cd2a5-1a21-4521-b846-a5bc8306e34d.png",
@@ -319,6 +376,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/uploads/c9d1337a-6619-4e6b-9a1b-d807543ab19c.png"
+    },
+    {
+      "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/fede65e3-7a24-4a13-8db1-1335ef1ee318.png",
+      "SourceId": "DemoShopApi",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/",
+      "BasePath": "_content/DemoShopApi",
+      "RelativePath": "uploads/fede65e3-7a24-4a13-8db1-1335ef1ee318.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/fede65e3-7a24-4a13-8db1-1335ef1ee318.png"
     },
     {
       "Identity": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/kawa.png",
