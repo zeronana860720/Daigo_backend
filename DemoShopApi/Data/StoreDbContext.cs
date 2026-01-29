@@ -127,6 +127,10 @@ public partial class StoreDbContext : DbContext
             entity.Property(e => e.UpdatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("updated_at");
+            entity.Property(e => e.StoreImage)
+                .HasColumnName("store_image")
+                .HasMaxLength(500);
+
         });
 
         modelBuilder.Entity<StoreProduct>(entity =>
