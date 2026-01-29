@@ -1,76 +1,12 @@
 {
   "Files": [
     {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/receipts/0204ac20-9f64-4e4c-b7e3-ed5ae9565f1e.png",
-      "PackagePath": "staticwebassets/receipts/0204ac20-9f64-4e4c-b7e3-ed5ae9565f1e.png"
-    },
-    {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/receipts/08fcc39f-273e-48af-a29d-008900c05df0.png",
-      "PackagePath": "staticwebassets/receipts/08fcc39f-273e-48af-a29d-008900c05df0.png"
-    },
-    {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/receipts/dba42ae4-6324-4239-a496-f2cf47b43485.png",
-      "PackagePath": "staticwebassets/receipts/dba42ae4-6324-4239-a496-f2cf47b43485.png"
-    },
-    {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/119c5352-034c-468c-9601-d1595e3df5f9.png",
-      "PackagePath": "staticwebassets/uploads/119c5352-034c-468c-9601-d1595e3df5f9.png"
-    },
-    {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/150fabe7-17bc-4e8d-a767-ecee977ac70c.png",
-      "PackagePath": "staticwebassets/uploads/150fabe7-17bc-4e8d-a767-ecee977ac70c.png"
-    },
-    {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/28efe164-253d-4031-b4f6-1c04a6f69f32.png",
-      "PackagePath": "staticwebassets/uploads/28efe164-253d-4031-b4f6-1c04a6f69f32.png"
-    },
-    {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/36849497-5182-4f45-be3d-fe81f5a87120.png",
-      "PackagePath": "staticwebassets/uploads/36849497-5182-4f45-be3d-fe81f5a87120.png"
-    },
-    {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/38c57b53-ca60-47bb-8bfa-cefdb03ea728.png",
-      "PackagePath": "staticwebassets/uploads/38c57b53-ca60-47bb-8bfa-cefdb03ea728.png"
-    },
-    {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/53a95298-9e6e-4874-b0b8-d8d4b1d0012f.png",
-      "PackagePath": "staticwebassets/uploads/53a95298-9e6e-4874-b0b8-d8d4b1d0012f.png"
-    },
-    {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/5fc51fd8-d973-4cd1-bcb9-6296d2149548.png",
-      "PackagePath": "staticwebassets/uploads/5fc51fd8-d973-4cd1-bcb9-6296d2149548.png"
-    },
-    {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/6ebc2b43-9ea6-415c-959a-f51622318701.png",
-      "PackagePath": "staticwebassets/uploads/6ebc2b43-9ea6-415c-959a-f51622318701.png"
-    },
-    {
       "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/73c240bf-066d-4ca8-9da8-e73ecaabf2e5.png",
       "PackagePath": "staticwebassets/uploads/73c240bf-066d-4ca8-9da8-e73ecaabf2e5.png"
     },
     {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/77b90e10-9202-4695-bf6a-4900e4361918.png",
-      "PackagePath": "staticwebassets/uploads/77b90e10-9202-4695-bf6a-4900e4361918.png"
-    },
-    {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/836cd2a5-1a21-4521-b846-a5bc8306e34d.png",
-      "PackagePath": "staticwebassets/uploads/836cd2a5-1a21-4521-b846-a5bc8306e34d.png"
-    },
-    {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/917fe253-b46c-4df2-8fbd-ed7696b83865.webp",
-      "PackagePath": "staticwebassets/uploads/917fe253-b46c-4df2-8fbd-ed7696b83865.webp"
-    },
-    {
       "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/NyPerfectCheese.png",
       "PackagePath": "staticwebassets/uploads/NyPerfectCheese.png"
-    },
-    {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/bd058209-b90b-4250-961c-be2d1ecefa3e.png",
-      "PackagePath": "staticwebassets/uploads/bd058209-b90b-4250-961c-be2d1ecefa3e.png"
-    },
-    {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/c0e22b34-675e-4bf5-bec4-3705d8a88d06.webp",
-      "PackagePath": "staticwebassets/uploads/c0e22b34-675e-4bf5-bec4-3705d8a88d06.webp"
     },
     {
       "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/c3f3fb1a-67b8-4777-8b83-d106dba36a51.png",
@@ -79,10 +15,6 @@
     {
       "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/c9d1337a-6619-4e6b-9a1b-d807543ab19c.png",
       "PackagePath": "staticwebassets/uploads/c9d1337a-6619-4e6b-9a1b-d807543ab19c.png"
-    },
-    {
-      "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/fede65e3-7a24-4a13-8db1-1335ef1ee318.png",
-      "PackagePath": "staticwebassets/uploads/fede65e3-7a24-4a13-8db1-1335ef1ee318.png"
     },
     {
       "Id": "/Users/momo/RiderProjects/DemoShopApi/DemoShopApi/wwwroot/uploads/kawa.png",
