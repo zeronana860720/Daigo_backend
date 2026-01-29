@@ -6,6 +6,7 @@ using System.Text;
 using DemoShopApi.Hubs;
 using DemoShopApi.services;
 using System.IdentityModel.Tokens.Jwt;
+using DemoShopApi.Models;
 using Microsoft.OpenApi.Models;
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
@@ -14,6 +15,9 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. 註冊資料庫 (DbContext)
 builder.Services.AddDbContext<DaigoContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddDbContext<StoreDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ShopConnection")));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -95,6 +99,7 @@ builder.Services.AddSignalR();
 builder.Services.AddScoped<CommissionService>();
 builder.Services.AddScoped<CreateCommissionCode>();
 builder.Services.AddScoped<ReviewService>();
+builder.Services.AddScoped<ImageUploadService>();
 
 var app = builder.Build();
 
