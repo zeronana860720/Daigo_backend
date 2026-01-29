@@ -31,54 +31,89 @@ public class DemoShopApiController : ControllerBase
     }
     [HttpGet("{sellerUid}/myseller")]
     [Authorize]
-    [HttpPost] // 建立賣場
-    public async Task<IActionResult> CreateStore([FromBody] CreateStoreDto dto)
+    [HttpPost]
+    public async Task<IActionResult> CreateStore([FromForm] CreateStoreDto dto)
     {
-        // 從 JWT 取得目前登入者的 Uid（賣家編號）
+        // 1. 取得目前登入者的 Uid (賣家身分確認)
         var sellerUid = GetCurrentSellerUid();
 
+        // 2. 數量檢查邏輯：確保賣家沒有超過 10 個賣場
+        int storeCount = await _db.Stores.CountAsync(s => s.SellerUid == sellerUid);
+        if (storeCount >= 10)
+        {
+            return BadRequest(new { message = "此賣家最多只能建立 10 個賣場 (｡>﹏<｡)" });
+        }
+
+        // 3. 圖片處理邏輯：把圖片從包裹 (Dto) 拿出來存到電腦裡
+        string? savedPath = null;
+        if (dto.StoreImage != null && dto.StoreImage.Length > 0)
+        {
+            // 設定存檔路徑：存到 wwwroot/uploads
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            // 幫圖片取個獨一無二的名字
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(dto.StoreImage.FileName);
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            // 執行存檔動作
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await dto.StoreImage.CopyToAsync(stream);
+            }
+        
+            // 這是要存進資料庫的「圖片路徑字串」
+            savedPath = $"/uploads/{fileName}";
+        }
+
+        // 4. 資料庫寫入邏輯：建立新的賣場物件
         var store = new Store
         {
-            SellerUid = sellerUid,      // 不再用 dto.SellerUid
+            SellerUid = sellerUid,
             StoreName = dto.StoreName,
-            Status = 0,                 // 草稿
+            StoreImage = savedPath,    // 這裡存的是剛才產生的路徑喔！
+            Status = 0,               // 預設為草稿狀態
             ReviewFailCount = 0,
             CreatedAt = DateTime.Now
         };
 
-        // 計算此賣家已建立的賣場數量
-        int storeCount = await _db.Stores
-            .CountAsync(s => s.SellerUid == sellerUid); // 這裡也改成 token 的 Uid
-
-        // 若已達上限（10 個）則拒絕
-        if (storeCount >= 10)
-        {
-            return BadRequest(new
-            {
-                message = "此賣家最多只能建立  10 個賣場"
-            });
-        }
-
         _db.Stores.Add(store);
         await _db.SaveChangesAsync();
 
+        // 5. 回傳結果
         return Ok(new
         {
             store.StoreId,
+            store.StoreName,
+            store.StoreImage
         });
     }
 
 
     
-    // [HttpGet("my/{sellerUid}/mystore")]//  賣家查看自己的賣場
-    // public async Task<IActionResult> GetMyStore(string sellerUid)
-    // {
-    //     var stores = await _db.Stores
-    //         .Where(s => s.SellerUid == sellerUid)
-    //         .ToListAsync();
-    //
-    //     return Ok(stores);
-    // }
+    [HttpGet("my/mystore")] // 改路由，不用傳 sellerUid
+    [Authorize]
+    public async Task<IActionResult> GetMyStore()
+    {
+        var sellerUid = GetCurrentSellerUid(); // 從 token 抓
+
+        var stores = await _db.Stores
+            .Where(s => s.SellerUid == sellerUid)
+            .Select(s => new // 改成 anonymous object，包含圖片
+            {
+                s.StoreId,
+                s.StoreName,
+                s.Status,
+                s.StoreImage,      // ⬅ 加這行
+                s.CreatedAt,
+                s.ReviewFailCount
+            })
+            .OrderByDescending(s => s.CreatedAt)
+            .ToListAsync();
+
+        return Ok(stores);
+    }
+
 
     [HttpGet("forpublic")]   // 非會員對象可以查看賣場底下與商品
     public async Task<IActionResult> GetPublicStores()

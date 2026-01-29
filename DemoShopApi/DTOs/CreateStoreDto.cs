@@ -9,5 +9,7 @@ namespace DemoShopApi.DTOs
 
         [Required(ErrorMessage = "賣場名稱必填")]
         public string StoreName { get; set; } = null!;
+        
+        public IFormFile? StoreImage { get; set; }
     }
 }

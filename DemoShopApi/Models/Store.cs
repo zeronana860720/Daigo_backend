@@ -23,6 +23,8 @@ public partial class Store
     public DateTime? SubmittedAt { get; set; }
 
     public DateTime? RecoverAt { get; set; }
+    
+    public string? StoreImage { get; set; }
 
     public virtual ICollection<BuyerOrder> BuyerOrders { get; set; } = new List<BuyerOrder>();
 
