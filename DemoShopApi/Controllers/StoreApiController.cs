@@ -30,7 +30,7 @@ public class DemoShopApiController : ControllerBase
         return sellerUid;
     }
     
-    [Authorize]
+    [Authorize]// done
     [HttpPost("my/store")]
     public async Task<IActionResult> CreateStore([FromForm] CreateStoreDto dto)
     {
@@ -92,7 +92,7 @@ public class DemoShopApiController : ControllerBase
     }
 
 
-    
+    // done
     [HttpGet("my/mystore")] // 改路由，不用傳 sellerUid
     [Authorize]
     public async Task<IActionResult> GetMyStore()
@@ -179,6 +179,7 @@ public class DemoShopApiController : ControllerBase
         return Ok(store);
     }
    
+    // done 
     [HttpPost("{storeId}/submit")] //  賣家送審賣場
     public async Task<IActionResult> SubmitStore(int storeId)
     {

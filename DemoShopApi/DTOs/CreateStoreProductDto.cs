@@ -2,28 +2,39 @@
 
 namespace DemoShopApi.DTOs
 {
-        public class CreateStoreProductDto
-        {
-            [Required(ErrorMessage = "商品名稱必填")]
-            [StringLength(100, ErrorMessage = "商品名稱不可超過 100 字")]
-            public string ProductName { get; set; } = null!;
+    public class CreateStoreProductDto
+    {
+        // 原本的欄位
+        public string ProductName { get; set; }
+    
+        public decimal Price { get; set; }
+    
+        public int Quantity { get; set; }
+    
+        public string Description { get; set; }
+    
+        public DateTime EndDate { get; set; }
+    
+        public IFormFile Image { get; set; }
+    
+        public string? Location { get; set; }  // 原本就有的地點名稱欄位
+    
+        // ✨ 新增：地點相關欄位
+        [MaxLength(255)]
+        public string? GooglePlaceId { get; set; }  // Google Place ID
+    
+        [MaxLength(255)]
+        public string? LocationName { get; set; }  // 地點名稱
+    
+        [MaxLength(500)]
+        public string? FormattedAddress { get; set; }  // 完整地址
+    
+        public decimal Latitude { get; set; }  // 緯度
+    
+        public decimal Longitude { get; set; }  // 經度
+        
+        [MaxLength(50)]
+        public string? Category { get; set; }  // ✓ 新增這行
+    }
 
-            public string? Description { get; set; }
-
-            [Range(0.1, 500000)]
-            public decimal Price { get; set; }
-
-            [Range(1, 500)]
-            public int Quantity { get; set; }
-
-            public string? Location { get; set; }
-            
-            [Required(ErrorMessage = "請上傳商品圖片")]
-        public IFormFile? Image { get; set; }
-
-        [Required(ErrorMessage = "請設定下單截止日期")]
-
-
-            public DateTime? EndDate { get; set; }
-        }
     }

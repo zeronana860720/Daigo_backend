@@ -36,6 +36,14 @@ public partial class StoreProduct
     public int Status { get; set; }
 
     public string? RejectReason { get; set; }
+    
+    // ✨ 新增這兩行
+    public int? PlaceId { get; set; }  // 外鍵 (可為 null)
+    
+    public string? Category { get; set; } 
+    
+    public virtual StoreProductPlace? Place { get; set; }  // 導覽屬性 (選填)
+
 
     public virtual ICollection<BuyerOrderDetail> BuyerOrderDetails { get; set; } = new List<BuyerOrderDetail>();
 

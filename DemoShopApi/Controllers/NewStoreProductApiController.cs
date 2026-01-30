@@ -8,20 +8,22 @@ using DemoShopApi.services;
 namespace DemoShopApi.Controllers
 {
     [ApiController]
-    [Route("api/store/{storeId}/products/newproducts")]
-    [Tags("4 NewStoreProductApi")]
+    [Route("api/createstore")]  // ✓ 改:移除 {storeId},避免重複
+    [Tags("4 StoreProduct")]  // ✓ 改:更簡潔的名稱
 
-    public class NewStoreProductApiController : ControllerBase
+    public class StoreProductController : ControllerBase  // ✓ 改:更簡潔的 Controller 名稱
     {
         private readonly StoreDbContext _db;
         private readonly ImageUploadService _imageService;
-        public NewStoreProductApiController(StoreDbContext db, ImageUploadService imageService)
+        
+        public StoreProductController(StoreDbContext db, ImageUploadService imageService)
         {
             _db = db;
             _imageService = imageService;
         }
-        [HttpPost] //  已發布的賣場下新增商品（第二波）
-        public async Task<IActionResult> CreateNewProduct(int storeId,[FromForm] CreateStoreProductDto dto)
+        
+        [HttpPost("{storeId}/products")]  // ✓ 改:更簡潔的路由
+        public async Task<IActionResult> CreateProduct(int storeId, [FromForm] CreateStoreProductDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -42,9 +44,43 @@ namespace DemoShopApi.Controllers
             if (store.Status != 3)
                 return BadRequest("僅限已發布賣場可新增商品");
 
-            // ⭐ NEW 系列：用 Service 存圖
+            // 處理地點資料
+            int? placeId = null;
+            if (!string.IsNullOrEmpty(dto.GooglePlaceId))
+            {
+                // 先檢查這個地點是否已經存在
+                var existingPlace = await _db.StoreProductPlaces
+                    .FirstOrDefaultAsync(p => p.GooglePlaceId == dto.GooglePlaceId);
+
+                if (existingPlace != null)
+                {
+                    // 地點已存在，直接使用
+                    placeId = existingPlace.PlaceId;
+                }
+                else
+                {
+                    // 地點不存在，建立新的地點記錄
+                    var newPlace = new StoreProductPlace
+                    {
+                        GooglePlaceId = dto.GooglePlaceId,
+                        Name = dto.LocationName,
+                        FormattedAddress = dto.FormattedAddress,
+                        Latitude = dto.Latitude,
+                        Longitude = dto.Longitude,
+                        CreatedAt = DateTime.Now
+                    };
+
+                    _db.StoreProductPlaces.Add(newPlace);
+                    await _db.SaveChangesAsync();
+
+                    placeId = newPlace.PlaceId;
+                }
+            }
+
+            // 存圖
             var imagePath = await _imageService.SaveProductImageAsync(dto.Image);
 
+            // 建立商品
             var product = new StoreProduct
             {
                 StoreId = storeId,
@@ -53,12 +89,14 @@ namespace DemoShopApi.Controllers
                 Quantity = dto.Quantity,
                 Description = dto.Description,
                 EndDate = dto.EndDate,
-                Location = dto.Location,
-
+                Location = dto.LocationName,
+                
+                PlaceId = placeId,
                 ImagePath = imagePath,
 
-                Status = 1,       // 新商品 -> 待審核
-                IsActive = false, // 審核中不可於前端顯示
+                Status = 1,
+                IsActive = false,
+                Category = dto.Category,
                 CreatedAt = DateTime.Now
             };
 
@@ -68,19 +106,21 @@ namespace DemoShopApi.Controllers
             return Ok(new
             {
                 message = "商品已建立，等待審核",
-                product.ProductId,
-                product.ImagePath
+                productId = product.ProductId,
+                imagePath = product.ImagePath,
+                placeId = placeId
             });
         }
+
        
-        [HttpPut("{productId}/update-price-quantity")]// 已發布商品僅允許調整 價格跟數量（不送審） 
-        public async Task<IActionResult> UpdateNewProduct(int storeId,int productId,[FromBody] UpdateNewProductDto dto)
+        [HttpPut("{storeId}/products/{productId}/price-quantity")]  // ✓ 改:更清晰的路由結構
+        public async Task<IActionResult> UpdatePriceAndQuantity(int storeId, int productId, [FromBody] UpdateNewProductDto dto)
         {
             var product = await _db.StoreProducts
-            .Include(p => p.Store)
-            .FirstOrDefaultAsync(p =>
-             p.ProductId == productId &&
-             p.StoreId == storeId);
+                .Include(p => p.Store)
+                .FirstOrDefaultAsync(p =>
+                    p.ProductId == productId &&
+                    p.StoreId == storeId);
 
             if (product == null)
                 return NotFound("商品不存在");
@@ -118,14 +158,14 @@ namespace DemoShopApi.Controllers
         }
 
       
-        [HttpPut("{productId}/updatereview")]  // 修改商品名稱跟圖片則強制重新審核
-        public async Task<IActionResult> UpdateNewProductReview(int storeId,int productId,[FromForm] UpdateNewProductReviewDto dto)
+        [HttpPut("{storeId}/products/{productId}/resubmit")]  // ✓ 改:更清晰的路由
+        public async Task<IActionResult> UpdateProductForReview(int storeId, int productId, [FromForm] UpdateNewProductReviewDto dto)
         {
             var product = await _db.StoreProducts
-             .Include(p => p.Store)
-             .FirstOrDefaultAsync(p =>
-             p.ProductId == productId &&
-             p.StoreId == storeId);
+                .Include(p => p.Store)
+                .FirstOrDefaultAsync(p =>
+                    p.ProductId == productId &&
+                    p.StoreId == storeId);
 
             if (product == null)
                 return NotFound("商品不存在");
@@ -147,10 +187,10 @@ namespace DemoShopApi.Controllers
                 return BadRequest("商品名稱不可為空");
             }
 
-            // ⭐ NEW 系列：存新圖
+            // 存新圖
             var newImagePath = await _imageService.SaveProductImageAsync(dto.Image);
 
-            // 更新名稱（一定會進審核）
+            // 更新名稱
             product.ProductName = dto.ProductName;
 
             if (newImagePath != null)
@@ -161,7 +201,7 @@ namespace DemoShopApi.Controllers
                 product.ImagePath = newImagePath;
             }
 
-            // 一律重新進審核
+            // 重新進審核
             product.Status = 1;
             product.IsActive = false;
             product.UpdatedAt = DateTime.Now;
@@ -174,8 +214,8 @@ namespace DemoShopApi.Controllers
             });
         }
  
-        [HttpDelete("{productId}/deactivate")] // 下架商品（不刪資料）
-        public async Task<IActionResult> deleteProduct(int storeId,int productId)
+        [HttpDelete("{storeId}/products/{productId}")]  // ✓ 改:使用標準 RESTful 路由
+        public async Task<IActionResult> DeactivateProduct(int storeId, int productId)  // ✓ 改:方法名稱大寫開頭
         {
             var product = await _db.StoreProducts
                 .Include(p => p.Store)
@@ -207,8 +247,8 @@ namespace DemoShopApi.Controllers
             });
         }
 
-        [HttpPut("/api/products/{productId}/resubmit")] // 被退件的第二波商品修改後重新送審
-        public async Task<IActionResult> ResubmitProduct(int productId,[FromForm] ResubmitProductDto dto)
+        [HttpPut("products/{productId}/resubmit-rejected")]  // ✓ 改:更清晰的路由名稱
+        public async Task<IActionResult> ResubmitRejectedProduct(int productId, [FromForm] ResubmitProductDto dto)
         {
             var product = await _db.StoreProducts
                 .FirstOrDefaultAsync(p => p.ProductId == productId);
@@ -243,8 +283,8 @@ namespace DemoShopApi.Controllers
         }
 
 
-        [HttpPut("{productId}/visible")]// 重新上架商品
-        public async Task<IActionResult> VisibleProduct(int storeId,int productId)
+        [HttpPut("{storeId}/products/{productId}/activate")]  // ✓ 改:使用 activate 更符合語義
+        public async Task<IActionResult> ActivateProduct(int storeId, int productId)  // ✓ 改:更清楚的方法名稱
         {
             var product = await _db.StoreProducts
                 .Include(p => p.Store)
@@ -277,6 +317,5 @@ namespace DemoShopApi.Controllers
                 message = "商品已重新上架"
             });
         }
-
     }
 }
