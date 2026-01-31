@@ -18,6 +18,7 @@ namespace DemoShopApi.Controllers
             _db = db;
         }
    
+        // done
         [HttpGet("newpending")]  //  取得「第二波待審核商品清單」
         public async Task<IActionResult> GetPendingNewProducts()
         {
@@ -28,7 +29,7 @@ namespace DemoShopApi.Controllers
                     p.Store.Status == 3        // 賣場已發布
                 )
                 .Select(p => new
-                {
+                   {
                     p.ProductId,
                     p.ProductName,
                     p.Price,
@@ -39,7 +40,8 @@ namespace DemoShopApi.Controllers
                     StoreId = p.Store.StoreId,
                     StoreName = p.Store.StoreName,
 
-                    p.CreatedAt
+                    p.CreatedAt,
+                    SubmittedAt = p.CreatedAt
                 })
                 .ToListAsync();
 

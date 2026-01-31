@@ -31,38 +31,29 @@ public class StoreReviewApiController : ControllerBase
 
         return sellerUid;
     }
-    [HttpGet("storepending")] // 第一波 撈賣場+第一波賞品資料
+    
+    // 獲取審核中賣場
+    [HttpGet("storepending")]
     public async Task<IActionResult> GetPendingStores()
     {
         var stores = await _db.Stores
-            .Include(s => s.StoreProducts)
-            .Where(s => s.Status == 1)
+            .Where(s => s.Status == 1)  // 只撈審核中的賣場
+            .Select(s => new
+            {
+                s.StoreId,
+                s.StoreName,
+                s.StoreImage,
+                s.StoreDescription,
+                s.Status,
+                s.ReviewFailCount,
+                s.CreatedAt,
+                SellerUid = s.SellerUid
+            })
             .ToListAsync();
 
-        var result = stores.Select(s => new StoreReviewListDto
-        {
-            StoreId = s.StoreId,
-            SellerId = s.SellerUid,
-            StoreName = s.StoreName,
-            Status = s.Status,
-            ReviewFailCount = s.ReviewFailCount,
-            CreatedAt = s.CreatedAt,
-
-            StoreProducts = s.StoreProducts
-            .Where(p => p.Status == 1) // 只顯示送審中的商品
-            .Select(p => new StoreReviewProductDto
-            {
-            ProductId = p.ProductId,
-            ProductName = p.ProductName,
-            Price = p.Price,
-            Quantity = p.Quantity
-            })
-            .ToList()
-
-        }).ToList();
-
-        return Ok(result);
+        return Ok(stores);
     }
+
   
     [HttpPost("{storeId}/storeapprove")]  // 賣場審核通過
     public async Task<IActionResult> ApproveStore(int storeId, [FromBody] ReviewDto dto)
