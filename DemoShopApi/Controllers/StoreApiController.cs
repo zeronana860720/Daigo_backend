@@ -314,5 +314,89 @@ public class DemoShopApiController : ControllerBase
             store.Status
         });
     }
+    
+    // 關閉賣場
+    [Authorize]
+    [HttpPost("{storeId}/close")]  // 賣家關閉自己的賣場
+    public async Task<IActionResult> CloseStore(int storeId)
+    {
+        // 1. 取得目前登入者的 Uid
+        var sellerUid = GetCurrentSellerUid();
+
+        // 2. 找出要關閉的賣場 (確認是本人的)
+        var store = await _db.Stores
+            .FirstOrDefaultAsync(s => s.StoreId == storeId && s.SellerUid == sellerUid);
+
+        // 3. 檢查賣場是否存在
+        if (store == null)
+            return NotFound(new { message = "賣場不存在或無權限操作" });
+
+        // 4. 檢查賣場是否已經是關閉狀態
+        if (store.Status == 5)
+            return BadRequest(new { message = "賣場已經是關閉狀態" });
+
+        // 5. 把賣場狀態改成「已關閉」
+        store.Status = 5;
+        store.UpdatedAt = DateTime.Now;
+
+        // 6. 商品狀態不變！只改賣場狀態
+        // (刪除原本修改商品的程式碼)
+
+        // 7. 儲存到資料庫
+        await _db.SaveChangesAsync();
+
+        // 8. 回傳成功訊息
+        return Ok(new
+        {
+            message = "賣場已關閉",
+            storeId = store.StoreId,
+            storeName = store.StoreName,
+            status = store.Status
+        });
+    }
+
+    
+    // 啟用賣場
+    [Authorize]
+    [HttpPost("{storeId}/reopen")]  // 賣家重新啟用賣場
+    public async Task<IActionResult> ReopenStore(int storeId)
+    {
+        // 1. 取得目前登入者的 Uid
+        var sellerUid = GetCurrentSellerUid();
+
+        // 2. 找出要啟用的賣場 (確認是本人的)
+        var store = await _db.Stores
+            .FirstOrDefaultAsync(s => s.StoreId == storeId && s.SellerUid == sellerUid);
+
+        // 3. 檢查賣場是否存在
+        if (store == null)
+            return NotFound(new { message = "賣場不存在或無權限操作" });
+
+        // 4. 檢查賣場是否是關閉狀態
+        if (store.Status != 5)
+            return BadRequest(new { message = "賣場不是關閉狀態" });
+
+        // 5. 把賣場狀態改回「營業中」
+        store.Status = 1;
+        store.UpdatedAt = DateTime.Now;
+
+        // 6. 商品狀態不變！只改賣場狀態
+        // (刪除原本修改商品的程式碼)
+
+        // 7. 儲存到資料庫
+        await _db.SaveChangesAsync();
+
+        // 8. 回傳成功訊息
+        return Ok(new
+        {
+            message = "賣場已重新啟用",
+            storeId = store.StoreId,
+            storeName = store.StoreName,
+            status = store.Status
+        });
+    }
+
+
+
 
 }

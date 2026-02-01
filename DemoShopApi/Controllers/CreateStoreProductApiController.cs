@@ -24,60 +24,60 @@ public class CreateStoreProductApiController : ControllerBase
         _imageService = imageService;
     }
   
-    [HttpPost] //  建立第一波商品（商品隨賣場一起進審核）
-    public async Task<IActionResult> CreateProduct(int storeId,[FromForm] CreateStoreProductDto dto)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var store = await _db.Stores
-            .FirstOrDefaultAsync(s => s.StoreId == storeId);
-
-        if (store == null)
-            return NotFound("賣場不存在");
-
-        if (store.Status == 4)
-        {
-            return BadRequest("賣場停權中，暫時無法操作商品");
-        }
-
-        // 只有草稿可新增商品
-        if (store.Status != 0)
-        {
-            return BadRequest(new
-            {
-                message = "賣場已送審或已發布，禁止再新增商品"
-            });
-        }
-
-        var imagePath = await _imageService.SaveProductImageAsync(dto.Image);
-
-        var product = new StoreProduct
-        {
-            StoreId = storeId,
-            ProductName = dto.ProductName,
-            Description = dto.Description,
-            Price = dto.Price,
-            Quantity = dto.Quantity,
-            Location = dto.Location,
-            EndDate = dto.EndDate,
-
-            // ⭐ 圖片重點
-            ImagePath = imagePath,
-
-            Status = 0,
-            CreatedAt = DateTime.Now
-        };
-
-        _db.StoreProducts.Add(product);
-        await _db.SaveChangesAsync();
-        return Ok(new
-        {
-            product.ProductId,
-            product.ImagePath,
-            Message = "商品已建立，隨賣場進入審核"
-        });
-    }
+    // [HttpPost] //  建立第一波商品（商品隨賣場一起進審核）
+    // public async Task<IActionResult> CreateProduct(int storeId,[FromForm] CreateStoreProductDto dto)
+    // {
+    //     if (!ModelState.IsValid)
+    //         return BadRequest(ModelState);
+    //
+    //     var store = await _db.Stores
+    //         .FirstOrDefaultAsync(s => s.StoreId == storeId);
+    //
+    //     if (store == null)
+    //         return NotFound("賣場不存在");
+    //
+    //     if (store.Status == 4)
+    //     {
+    //         return BadRequest("賣場停權中，暫時無法操作商品");
+    //     }
+    //
+    //     // 只有草稿可新增商品
+    //     if (store.Status != 0)
+    //     {
+    //         return BadRequest(new
+    //         {
+    //             message = "賣場已送審或已發布，禁止再新增商品"
+    //         });
+    //     }
+    //
+    //     var imagePath = await _imageService.SaveProductImageAsync(dto.Image);
+    //
+    //     var product = new StoreProduct
+    //     {
+    //         StoreId = storeId,
+    //         ProductName = dto.ProductName,
+    //         Description = dto.Description,
+    //         Price = dto.Price,
+    //         Quantity = dto.Quantity,
+    //         Location = dto.Location,
+    //         EndDate = dto.EndDate,
+    //
+    //         // ⭐ 圖片重點
+    //         ImagePath = imagePath,
+    //
+    //         Status = 0,
+    //         CreatedAt = DateTime.Now
+    //     };
+    //
+    //     _db.StoreProducts.Add(product);
+    //     await _db.SaveChangesAsync();
+    //     return Ok(new
+    //     {
+    //         product.ProductId,
+    //         product.ImagePath,
+    //         Message = "商品已建立，隨賣場進入審核"
+    //     });
+    // }
 
     [HttpPut("{productId}/edit")]   // 修改審核中的商品資訊
     public async Task<IActionResult> EditProduct(int storeId,int productId,[FromForm] EditProductDto dto)
