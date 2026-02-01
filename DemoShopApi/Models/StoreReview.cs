@@ -7,7 +7,9 @@ public partial class StoreReview
 {
     public int ReviewId { get; set; }
 
-    public int ProductId { get; set; }
+    // 完全不要有 ProductId 或 StoreId
+    // public int? ProductId { get; set; }  
+    public int? StoreId { get; set; }
 
     public string ReviewerUid { get; set; } = null!;
 
@@ -17,5 +19,7 @@ public partial class StoreReview
 
     public DateTime CreatedAt { get; set; }
 
-    public virtual Store Product { get; set; } = null!;
+    // 也不要有導覽屬性
+    // public virtual Store? Product { get; set; }
+    // public virtual Store? Store { get; set; }
 }
