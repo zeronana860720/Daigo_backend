@@ -54,7 +54,8 @@ public class StoreReviewApiController : ControllerBase
         return Ok(stores);
     }
 
-  
+    
+    // ing
     [HttpPost("{storeId}/storeapprove")]  // 賣場審核通過
     public async Task<IActionResult> ApproveStore(int storeId, [FromBody] ReviewDto dto)
     {
@@ -70,26 +71,28 @@ public class StoreReviewApiController : ControllerBase
         store.ReviewFailCount = 0;
 
         // 連同賣場一起啟用第一波商品
-        foreach (var product in store.StoreProducts)
-        {
-            product.Status = 3;       // 已發布
-            product.IsActive = true;  // 前端顯示
-        }
-
-        // 寫入審核紀錄
-        // _db.StoreReviews.Add(new StoreReview
+        // foreach (var product in store.StoreProducts)
         // {
-        //     // ProductId = productId,     // 記錄商品ID
-        //     ReviewerUid = dto.ReviewerUid,
-        //     Result = 1,                // 1 = 通過 (假設 enum/convention)
-        //     CreatedAt = DateTime.Now
-        // });
+        //     product.Status = 3;       // 已發布
+        //     product.IsActive = true;  // 前端顯示
+        // }
+
+        
+        _db.StoreReviews.Add(new StoreReview
+        {
+            // ProductId = productId,     // 記錄商品ID
+            StoreId = storeId,
+            ReviewerUid = GetCurrentSellerUid(),
+            Result = 1,                // 1 = 通過 (假設 enum/convention)
+            CreatedAt = DateTime.Now
+        });
 
         await _db.SaveChangesAsync();
         return Ok(new { message = "賣場審核通過，第一波商品已同步上架" });
     }
 
     
+    // ing 退回
     [HttpPost("{storeId}/rejectstore")]// 賣場審核不通過
     public async Task<IActionResult> RejectStore(int storeId, [FromBody] ReviewDto dto)
     {
@@ -112,12 +115,12 @@ public class StoreReviewApiController : ControllerBase
             store.Status = 4;
             store.RecoverAt = DateTime.Now.AddDays(7);
 
-            // 停權時，商品才一起進 4
-            foreach (var product in store.StoreProducts)
-            {
-                product.Status = 4;
-                product.IsActive = false;
-            }
+            // // 停權時，商品才一起進 4
+            // foreach (var product in store.StoreProducts)
+            // {
+            //     product.Status = 4;
+            //     product.IsActive = false;
+            // }
         }
         else
         {
@@ -126,14 +129,15 @@ public class StoreReviewApiController : ControllerBase
             store.RecoverAt = null;
         }
 
-        // _db.StoreReviews.Add(new StoreReview
-        // {
-        //     // ProductId = productId,
-        //     ReviewerUid = dto.ReviewerUid,
-        //     Result = 2,                   // 2 = 不通過
-        //     Comment = dto.Comment,
-        //     CreatedAt = DateTime.Now
-        // });
+        _db.StoreReviews.Add(new StoreReview
+        {
+            // ProductId = productId,
+            StoreId = storeId,
+            ReviewerUid = GetCurrentSellerUid(),
+            Result = 2,                   // 2 = 不通過
+            Comment = dto.Comment,
+            CreatedAt = DateTime.Now
+        });
 
         await _db.SaveChangesAsync();
         return Ok(new

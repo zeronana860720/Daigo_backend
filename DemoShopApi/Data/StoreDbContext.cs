@@ -266,6 +266,7 @@ public partial class StoreDbContext : DbContext
         entity.ToTable("StoreReview");
 
         entity.Property(e => e.ReviewId).HasColumnName("review_id");
+        entity.Property(e => e.StoreId).HasColumnName("store_id");  // ← 加這行
         entity.Property(e => e.Comment)
             .HasMaxLength(255)
             .HasColumnName("comment");
@@ -273,17 +274,13 @@ public partial class StoreDbContext : DbContext
             .HasDefaultValueSql("(getdate())")
             .HasColumnType("datetime")
             .HasColumnName("created_at");
-        entity.Property(e => e.ProductId).HasColumnName("product_id");
         entity.Property(e => e.Result).HasColumnName("result");
         entity.Property(e => e.ReviewerUid)
             .HasMaxLength(50)
             .HasColumnName("reviewer_uid");
-
-        entity.HasOne(d => d.Product).WithMany(p => p.StoreReviews)
-            .HasForeignKey(d => d.ProductId)
-            .OnDelete(DeleteBehavior.ClientSetNull)
-            .HasConstraintName("FK_StoreReview_Store");
     });
+
+
 
     OnModelCreatingPartial(modelBuilder);
 }

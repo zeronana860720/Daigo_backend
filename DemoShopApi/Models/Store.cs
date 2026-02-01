@@ -33,5 +33,5 @@ public partial class Store
 
     public virtual ICollection<StoreProduct> StoreProducts { get; set; } = new List<StoreProduct>();
 
-    public virtual ICollection<StoreReview> StoreReviews { get; set; } = new List<StoreReview>();
+    // public virtual ICollection<StoreReview> StoreReviews { get; set; } = new List<StoreReview>();
 }
