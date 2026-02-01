@@ -242,5 +242,77 @@ public class DemoShopApiController : ControllerBase
         });
     }
 
+    // 編輯賣場
+    [Authorize]
+    [HttpPut("{storeId}/update")]  // PUT 方法用於更新
+    public async Task<IActionResult> UpdateStore(int storeId, [FromForm] UpdateStoreDto dto)
+    {
+        // 1. 取得目前登入者的 Uid
+        var sellerUid = GetCurrentSellerUid();
+
+        // 2. 找出要編輯的賣場
+        var store = await _db.Stores
+            .FirstOrDefaultAsync(s => s.StoreId == storeId && s.SellerUid == sellerUid);
+
+        // 3. 檢查賣場是否存在 & 是否為本人的賣場
+        if (store == null)
+            return NotFound(new { message = "賣場不存在或無權限編輯" });
+
+        // 4. 更新賣場名稱
+        if (!string.IsNullOrWhiteSpace(dto.StoreName))
+        {
+            store.StoreName = dto.StoreName;
+        }
+
+        // 5. 更新賣場描述
+        store.StoreDescription = dto.StoreDescription;
+
+        // 6. 處理圖片上傳 (如果有新圖片)
+        if (dto.StoreImage != null && dto.StoreImage.Length > 0)
+        {
+            // 刪除舊圖片 (如果存在)
+            if (!string.IsNullOrEmpty(store.StoreImage))
+            {
+                var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", store.StoreImage.TrimStart('/'));
+                if (System.IO.File.Exists(oldImagePath))
+                {
+                    System.IO.File.Delete(oldImagePath);
+                }
+            }
+
+            // 上傳新圖片
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(dto.StoreImage.FileName);
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await dto.StoreImage.CopyToAsync(stream);
+            }
+
+            store.StoreImage = $"/uploads/{fileName}";
+        }
+
+        // 7. 編輯後狀態變成「審核中」
+        store.Status = 1;
+        store.SubmittedAt = DateTime.Now;
+        store.UpdatedAt = DateTime.Now;
+
+        // 8. 儲存到資料庫
+        await _db.SaveChangesAsync();
+
+        // 9. 回傳結果
+        return Ok(new
+        {
+            message = "賣場更新成功，已送交審核",
+            store.StoreId,
+            store.StoreName,
+            store.StoreImage,
+            store.StoreDescription,
+            store.Status
+        });
+    }
 
 }
