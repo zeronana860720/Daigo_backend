@@ -27,4 +27,7 @@ public partial class User
     
     // 失敗幾次就讓他帳號失效
     public DateTime? DisabledUntil { get; set; }
+
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
 }
