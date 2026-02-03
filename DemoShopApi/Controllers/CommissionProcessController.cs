@@ -343,49 +343,59 @@ public async Task<IActionResult> CreateCommission([FromForm] CommissionCreateDto
         }
 
 
-        //上傳明細-> done 
+        //上傳明細
         [HttpPost("{ServiceCode}/receipt")]
         public async Task<IActionResult> UploadReceipt(string ServiceCode, [FromForm] UploadReceiptDto dto)
         {
-            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                        ?? "102";// 接單者
+            // 1. ✨ 修改：拿掉測試用的 "102"，嚴格檢查身分
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId)) return Unauthorized(new { success = false, message = "請先登入" });
+
             var commissionId = await _proxyContext.Commissions
                                                  .Where(c => c.ServiceCode == ServiceCode)
                                                  .Select(c => c.CommissionId)
                                                  .FirstOrDefaultAsync();
             if (commissionId == 0)
             {
-                return NotFound("委託不存在");
+                return NotFound(new { success = false, message = "委託不存在" });
             }
+
             using var tx = await _proxyContext.Database.BeginTransactionAsync();
 
+            // 2. 驗證是否為接單者
             var order = await _proxyContext.CommissionOrders
                 .FirstOrDefaultAsync(o => o.CommissionId == commissionId && o.SellerId == userId);
 
             if (order == null)
-                return Forbid("你不是接單者");
+                return Forbid(); // 403 Forbidden: 你不是接單者
 
             var commission = await _proxyContext.Commissions
                 .FirstOrDefaultAsync(c => c.CommissionId == commissionId);
-            if (commission == null)
-            {
-                return NotFound("委託不存在");
+
+            if (commission == null) return NotFound("委託不存在");
+            
+            // 3. 驗證圖片
+            if (dto.Image == null || dto.Image.Length == 0) 
+            { 
+                return BadRequest(new { success = false, message = "請務必上傳收據照片" }); 
             }
-            if (dto.Image == null) { return BadRequest("請上傳圖片"); }
 
+            // 狀態檢查
             if (commission.Status != "已接單" && commission.Status != "出貨中")
-                return BadRequest("目前狀態不可上傳明細");
-
+                return BadRequest(new { success = false, message = "目前狀態不可上傳明細" });
 
             var commissionReceipt = await _proxyContext.CommissionReceipts
                                    .FirstOrDefaultAsync(c => c.CommissionId == commissionId);
+            
             bool isFirstUpload = commissionReceipt == null;
             var oldremark = commissionReceipt?.Remark;
 
-
-            // 存圖片
+            // 4. 存圖片 (維持原樣)
             var fileName = $"{Guid.NewGuid()}{Path.GetExtension(dto.Image.FileName)}";
-            var path = Path.Combine("wwwroot", "receipts", fileName);
+            // 建議把 receipts 資料夾放在 uploads 下面管理，或者維持你原本的 wwwroot/receipts 也可以
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "receipts", fileName);
+            
+            // 確保資料夾存在
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
             using var stream = new FileStream(path, FileMode.Create);
@@ -403,12 +413,20 @@ public async Task<IActionResult> CreateCommission([FromForm] CommissionCreateDto
                 _proxyContext.CommissionReceipts.Add(commissionReceipt);
             }
 
-            // 不管是不是第一次，都是更新「同一筆」
+            // 5. ✨ 重點修改：日期處理
+            // 如果前端傳來的 ReceiptDate 是預設值(0001/1/1) 或 null，就使用當下時間
+            // 假設你的 DTO 裡 ReceiptDate 是 DateTime? (Nullable)
+            commissionReceipt.ReceiptDate = dto.ReceiptDate ?? DateTime.Now;
+            
+            // 如果你的 DTO 裡 ReceiptDate 是 DateTime (非 Nullable)，請改成這樣判斷：
+            // commissionReceipt.ReceiptDate = dto.ReceiptDate == default ? DateTime.Now : dto.ReceiptDate;
+
             commissionReceipt.ReceiptImageUrl = newImageUrl;
             commissionReceipt.ReceiptAmount = dto.ReceiptAmount;
-            commissionReceipt.ReceiptDate = dto.ReceiptDate;
             commissionReceipt.Remark = dto.Remark;
+            commissionReceipt.UploadedAt = DateTime.Now; // 確保更新上傳時間
 
+            // 6. 更新狀態
             var oldStatus = commission.Status;
             if (commission.Status == "已接單")
             {
@@ -416,15 +434,13 @@ public async Task<IActionResult> CreateCommission([FromForm] CommissionCreateDto
                 commission.UpdatedAt = DateTime.Now;
             }
 
-
+            // 7. 寫入歷史紀錄 (這部分寫得很棒！維持原樣)
             var oldDiff = new Dictionary<string, object>();
             var newDiff = new Dictionary<string, object>();
 
-
-            oldDiff["imageurl"] = (isFirstUpload == true ? "null" : commissionReceipt.ReceiptImageUrl);
+            oldDiff["imageurl"] = (isFirstUpload ? "null" : commissionReceipt.ReceiptImageUrl);
             newDiff["imageurl"] = newImageUrl;
 
-           
             if (oldStatus != commission.Status)
             {
                 oldDiff["status"] = oldStatus;
@@ -435,10 +451,12 @@ public async Task<IActionResult> CreateCommission([FromForm] CommissionCreateDto
                 oldDiff["remark"] = oldremark;
                 newDiff["remark"] = dto.Remark;
             }
+
             var jsonOptions = new JsonSerializerOptions
             {
                 Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
             };
+
             if (oldDiff.Any())
             {
                 _proxyContext.CommissionHistories.Add(new CommissionHistory

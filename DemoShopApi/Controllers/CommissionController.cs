@@ -142,7 +142,7 @@ namespace DemoShopApi.Controllers
         [HttpGet("Hot")]
         public async Task<IActionResult> GetHotCommissions() 
         { 
-            // 1️⃣ 定義匯率
+            // 1.定義匯率
             var rates = new Dictionary<string, decimal> 
             { 
                 { "JPY", 0.201m }, 
@@ -150,7 +150,7 @@ namespace DemoShopApi.Controllers
                 { "USD", 32.5m } 
             };
 
-            // 2️⃣ 先按 Fee (總報酬) 由高到低排序,取前 10 個
+            // 2.先按 Fee (總報酬) 由高到低排序,取前 10 個
             var topByFee = await _proxyContext.Commissions
                 .Where(u => u.Status == "待接單")
                 .OrderByDescending(u => u.Fee)
@@ -171,7 +171,7 @@ namespace DemoShopApi.Controllers
                 })
                 .ToListAsync();
 
-            // 3️⃣ 從這 10 個計算報酬率並排序,取前 4 個
+            // 3.從這 10 個計算報酬率並排序,取前 4 個
             var result = topByFee
                 .Select(u => new
                 {
@@ -202,7 +202,44 @@ namespace DemoShopApi.Controllers
             });
         }
 
+        // 新增：查看委託收據的 API
+        // GET: api/Commissions/{serviceCode}/receipt
+        [HttpGet("{serviceCode}/receipt")]
+        public async Task<IActionResult> GetReceipt(string serviceCode)
+        {
+            // 1. 搜尋收據資料表
+            // 假設你的 Context 裡面有 CommissionReceipts 這個 DbSet
+            // 我們透過 ServiceCode 來連結 Commission 資料表確認是哪筆訂單
+            var receipt = await _proxyContext.CommissionReceipts
+                .Where(r => r.Commission.ServiceCode == serviceCode)
+                .Select(r => new
+                {
+                    r.ReceiptId,
+                    r.ReceiptImageUrl, // 收據圖片
+                    r.ReceiptAmount,   // 收據金額
+                    r.ReceiptDate,     // 收據上的日期
+                    r.Remark,          // 備註
+                    r.UploadedAt       // 上傳時間
+                })
+                .FirstOrDefaultAsync();
 
+            // 2. 如果找不到收據（可能還沒上傳，或是單號錯了）
+            if (receipt == null)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "找不到此委託的收據資料 (｡•́︿•̀｡)"
+                });
+            }
+
+            // 3. 成功找到就回傳
+            return Ok(new
+            {
+                success = true,
+                data = receipt
+            });
+        }
         
 
 

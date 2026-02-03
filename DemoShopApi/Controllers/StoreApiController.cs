@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using DemoShopApi.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DemoShopApi.Models;
@@ -12,11 +13,15 @@ using Microsoft.AspNetCore.Authorization;
 public class DemoShopApiController : ControllerBase
 {
     private readonly StoreDbContext _db;
+    
+    private readonly DaigoContext _daigoDb;
 
-    public DemoShopApiController(StoreDbContext db)
+    public DemoShopApiController(StoreDbContext db , DaigoContext daigoDb)
     {
         _db = db;
+        _daigoDb = daigoDb;
     }
+    
     private string GetCurrentSellerUid()
     {
         var sellerUid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -452,6 +457,7 @@ public class DemoShopApiController : ControllerBase
                 deadline = p.EndDate,
                 description = p.Description,
                 status = "販售中",
+                storeId = p.Store.StoreId,
             
                 // 賣場資訊
                 storeInfo = new
@@ -481,10 +487,85 @@ public class DemoShopApiController : ControllerBase
 
         return Ok(product);
     }
+    
+    // 建立訂單
+    [Authorize]
+    [HttpPost("orders")]
+    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto)
+    {
+        var buyerUid = GetCurrentSellerUid();
+
+        using var transaction1 = await _db.Database.BeginTransactionAsync();
+        
+        try {
+            // ✨ 加這個:檢查 StoreId 是否存在
+            var storeExists = await _db.Stores
+                .AnyAsync(s => s.StoreId == dto.StoreId);
+            
+            if (!storeExists)
+            {
+                return BadRequest(new { message = "賣場不存在" });
+            }
+            
+            var user = await _daigoDb.Users
+                .FirstOrDefaultAsync(u => u.Uid == buyerUid);
+            
+            if (user == null)
+            {
+                return NotFound(new { message = "找不到使用者資料" });
+            }
+            
+            if (user.Balance < dto.TotalAmount)
+            {
+                return BadRequest(new { 
+                    message = "餘額不足,無法完成訂單",
+                    currentBalance = user.Balance,
+                    required = dto.TotalAmount
+                });
+            }
+            
+            user.Balance -= dto.TotalAmount;
+            
+            var order = new BuyerOrder
+            {
+                BuyerUid = buyerUid,
+                StoreId = dto.StoreId,
+                TotalAmount = dto.TotalAmount,
+                ReceiverName = dto.ReceiverName,
+                ReceiverPhone = dto.ReceiverPhone,
+                ShippingAddress = dto.ShippingAddress,
+                Status = 0,
+                CreatedAt = DateTime.Now
+            };
+            
+            _db.BuyerOrders.Add(order);
+            
+            await _daigoDb.SaveChangesAsync();
+            await _db.SaveChangesAsync();
+            
+            await transaction1.CommitAsync();
+            
+            return Ok(new { 
+                message = "訂單建立成功!",
+                remainingBalance = user.Balance
+            });
+        }
+        catch (Exception ex)
+        {
+            await transaction1.RollbackAsync();
+            
+            // ✨ 加這個:顯示詳細錯誤訊息
+            var innerMessage = ex.InnerException?.Message ?? ex.Message;
+            
+            return StatusCode(500, new { 
+                message = "訂單建立失敗", 
+                error = innerMessage  // ✨ 改這行
+            });
+        }
+    }
 
 
 
-
-
-
+    
+    
 }
