@@ -395,6 +395,94 @@ public class DemoShopApiController : ControllerBase
             status = store.Status
         });
     }
+    
+    // 獲取商品列表
+    [HttpGet("allproducts")]
+    public async Task<IActionResult> GetProducts()
+    {
+        var products = await _db.StoreProducts
+            .Include(p => p.Place)  // Join StoreProduct_Place 表
+            .Where(p => p.Status == 3)  // 只拿上架中的商品
+            .Select(p => new
+            {
+                id = p.ProductId,
+                name = p.ProductName,
+                price = p.Price,
+                image = p.ImagePath,
+                category = p.Category,
+                location = p.Location,
+                deadline = p.EndDate,
+                status = "販售中",
+            
+                // 地點詳細資訊 (如果有的話)
+                placeDetails = p.Place == null ? null : new
+                {
+                    placeId = p.Place.PlaceId,
+                    googlePlaceId = p.Place.GooglePlaceId,
+                    name = p.Place.Name,
+                    address = p.Place.FormattedAddress,
+                    latitude = p.Place.Latitude,
+                    longitude = p.Place.Longitude,
+                    mapUrl = p.Place.MapUrl
+                }
+            })
+            .ToListAsync();
+
+        return Ok(products);
+    }
+    
+    
+    [HttpGet("products/{productId}")]
+    public async Task<IActionResult> GetProductDetail(int productId)
+    {
+        var product = await _db.StoreProducts
+            .Include(p => p.Place)      // Join 地點表
+            .Include(p => p.Store)      // Join 賣場表
+            .Where(p => p.ProductId == productId && p.Status == 3)  // 只拿上架中的
+            .Select(p => new
+            {
+                // 商品資訊
+                id = p.ProductId,
+                name = p.ProductName,
+                price = p.Price,
+                quantity = p.Quantity,
+                image = p.ImagePath,
+                category = p.Category,
+                location = p.Location,
+                deadline = p.EndDate,
+                description = p.Description,
+                status = "販售中",
+            
+                // 賣場資訊
+                storeInfo = new
+                {
+                    storeId = p.Store.StoreId,
+                    name = p.Store.StoreName,
+                    image = p.Store.StoreImage,
+                    description = p.Store.StoreDescription
+                },
+            
+                // 地點詳細資訊
+                placeDetails = p.Place == null ? null : new
+                {
+                    placeId = p.Place.PlaceId,
+                    googlePlaceId = p.Place.GooglePlaceId,
+                    name = p.Place.Name,
+                    address = p.Place.FormattedAddress,
+                    latitude = p.Place.Latitude,
+                    longitude = p.Place.Longitude,
+                    mapUrl = p.Place.MapUrl
+                }
+            })
+            .FirstOrDefaultAsync();
+
+        if (product == null)
+            return NotFound("商品不存在或已下架");
+
+        return Ok(product);
+    }
+
+
 
 
 
