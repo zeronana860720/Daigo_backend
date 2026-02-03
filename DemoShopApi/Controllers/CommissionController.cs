@@ -137,6 +137,71 @@ namespace DemoShopApi.Controllers
             });
         
         }
+        
+        // 獲取熱門委託 (首頁用)
+        [HttpGet("Hot")]
+        public async Task<IActionResult> GetHotCommissions() 
+        { 
+            // 1️⃣ 定義匯率
+            var rates = new Dictionary<string, decimal> 
+            { 
+                { "JPY", 0.201m }, 
+                { "TWD", 1.0m }, 
+                { "USD", 32.5m } 
+            };
+
+            // 2️⃣ 先按 Fee (總報酬) 由高到低排序,取前 10 個
+            var topByFee = await _proxyContext.Commissions
+                .Where(u => u.Status == "待接單")
+                .OrderByDescending(u => u.Fee)
+                .Take(10)
+                .Select(u => new 
+                { 
+                    u.ServiceCode,
+                    u.Title,
+                    u.Price,
+                    u.Quantity,
+                    u.Location,
+                    u.Category,
+                    u.ImageUrl,
+                    u.Deadline,
+                    u.Status,
+                    u.Currency,
+                    u.Fee
+                })
+                .ToListAsync();
+
+            // 3️⃣ 從這 10 個計算報酬率並排序,取前 4 個
+            var result = topByFee
+                .Select(u => new
+                {
+                    u.ServiceCode,
+                    u.Title,
+                    u.Price,
+                    u.Quantity,
+                    u.Location,
+                    u.Category,
+                    u.ImageUrl,
+                    u.Deadline,
+                    u.Status,
+                    u.Currency,
+                    u.Fee,
+                    // 計算報酬率: Fee / (Price * 匯率) * 100
+                    FeeRate = u.Price > 0 
+                        ? (u.Fee / (u.Price * (rates.ContainsKey(u.Currency) ? rates[u.Currency] : 1.0m))) * 100 
+                        : 0
+                })
+                .OrderByDescending(u => u.FeeRate)
+                .Take(4)
+                .ToList();
+
+            return Ok(new
+            {
+                success = true,
+                data = result
+            });
+        }
+
 
         
 
