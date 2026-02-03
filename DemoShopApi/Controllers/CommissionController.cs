@@ -30,29 +30,64 @@ namespace DemoShopApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCommissionsList() 
         { 
+            // 1️⃣ 先從資料庫抓出所有「待接單」的委託
             var commissions = await _proxyContext.Commissions
-                                                .Where(u=>u.Status == "待接單")
-                                                .OrderBy(u=>u.Deadline) //由大到小時間抓
-                                                .Select(u=> new 
-                                                { 
-                                                u.ServiceCode,
-                                                u.Title,
-                                                u.Price,
-                                                u.Quantity,
-                                                u.Location,
-                                                u.Category,
-                                                u.ImageUrl,
-                                                u.Deadline,
-                                                u.Status,
-                                                u.Currency,
-                                                }).ToListAsync();
+                .Where(u => u.Status == "待接單")
+                .Select(u => new 
+                { 
+                    u.ServiceCode,
+                    u.Title,
+                    u.Price,
+                    u.Quantity,
+                    u.Location,
+                    u.Category,
+                    u.ImageUrl,
+                    u.Deadline,
+                    u.Status,
+                    u.Currency,
+                    u.Fee
+                })
+                .ToListAsync();  // ✨ 先 ToListAsync() 把資料拉到記憶體
+
+            // 2️⃣ 定義匯率
+            var rates = new Dictionary<string, decimal> 
+            { 
+                { "JPY", 0.201m }, 
+                { "TWD", 1.0m }, 
+                { "USD", 32.5m } 
+            };
+
+            // 3️⃣ 在記憶體中計算報酬率並排序
+            var result = commissions
+                .Select(u => new
+                {
+                    u.ServiceCode,
+                    u.Title,
+                    u.Price,
+                    u.Quantity,
+                    u.Location,
+                    u.Category,
+                    u.ImageUrl,
+                    u.Deadline,
+                    u.Status,
+                    u.Currency,
+                    u.Fee,
+                    // ✨ 計算報酬率: Fee / (Price * 匯率) * 100
+                    FeeRate = u.Price > 0 
+                        ? (u.Fee / (u.Price * (rates.ContainsKey(u.Currency) ? rates[u.Currency] : 1.0m))) * 100 
+                        : 0
+                })
+                .OrderByDescending(u => u.FeeRate)  // 按報酬率由高到低排序
+                .ToList();
 
             return Ok(new
             {
                 success = true,
-                data = commissions
+                data = result
             });
         }
+
+
 
         //點擊委託之後 顯示的單筆詳細資料
         //done
