@@ -10,6 +10,7 @@
         <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.*" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.9" />
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.*">
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
           <PrivateAssets>all</PrivateAssets>
@@ -19,11 +20,8 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
           <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="SqlTableDependency" Version="8.5.8" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="wwwroot\" />
     </ItemGroup>
 
 </Project>

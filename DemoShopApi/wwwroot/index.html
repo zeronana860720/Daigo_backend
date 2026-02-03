@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" href="data:,">
+    <meta charset="utf-8" />
+    <title>即時通知測試</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js"></script>
+    <style>
+        #notification-list {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 200px;
+            overflow-y: scroll;
+        }
+
+        .unread-badge {
+            background: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+        }
+    </style>
+</head>
+<body>
+    <h1>蝦皮風通知中心 <span id="count" class="unread-badge">0</span></h1>
+    <div id="notification-list">
+        <p>等待通知中...</p>
+    </div>
+
+    <script>
+    // 初始化未讀計數
+    let unreadCount = 0;
+
+    // 1. 建立連線
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/notificationHub",
+            //{accessTokenFactory: () => localStorage.getItem("your_jwt_token") // 這裡帶入你的 Token}
+        )
+        .withAutomaticReconnect()
+        .build();
+
+    // 2. 核心監聽事件：請確保後端是呼叫 Clients.All.SendAsync("ReceiveNotification", ...)
+    connection.on("ReceiveNotification", (data) => {
+        // --- 除錯重點：印出原始資料 ---
+        console.log("%c [收到通知] ", "background: #222; color: #bada55; font-size: 15px;");
+        console.dir(data);
+
+        // 取得 UI 元素
+        const list = document.getElementById("notification-list");
+        const countBadge = document.getElementById("count");
+
+        // 建立 HTML 結構
+        const newEntry = document.createElement("div");
+        newEntry.style.borderBottom = "1px solid #eee";
+        newEntry.style.marginBottom = "10px";
+        newEntry.style.paddingBottom = "5px";
+
+        // 如果 data 是物件，則抓取屬性；如果是字串，則直接顯示
+        const title = data.title || "系統通知";
+        const content = data.content || data; // 若後端只傳字串，data 本身就是內容
+        const time = data.time || new Date().toLocaleTimeString();
+
+        newEntry.innerHTML = `
+                <strong style="color: #ee4d2d;">${title}</strong>
+                <small style="color: #999; float: right;">${time}</small>
+                <p style="margin: 5px 0;">${content}</p>
+            `;
+
+        // 插入到清單最上方
+        list.insertBefore(newEntry, list.firstChild);
+
+        // 更新計數器
+        unreadCount++;
+        countBadge.innerText = unreadCount;
+    });
+
+    // 3. 啟動連線
+    async function start() {
+        try {
+            await connection.start();
+            console.log("SignalR 連線成功！Connection ID:", connection.connectionId);
+            document.getElementById("notification-list").innerHTML = "<p style='color:green'>連線成功，等待廣播訊息...</p>";
+        } catch (err) {
+            console.error("連線失敗: ", err);
+            setTimeout(start, 5000); // 失敗則 5 秒後重試
+        }
+    }
+
+    start();
+
+    // 監控斷線狀態
+    connection.onreconnecting(error => console.warn("連線中斷，嘗試重連中...", error));
+    connection.onreconnected(connectionId => console.log("連線已恢復。ID:", connectionId));
+    </script>
+</body>
+</html>
