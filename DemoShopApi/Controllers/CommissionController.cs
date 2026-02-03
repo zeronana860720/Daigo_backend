@@ -64,6 +64,7 @@ namespace DemoShopApi.Controllers
                                                .Select(c => new
                                                {    //比普通清單多
                                                    c.ServiceCode, // 流水號
+                                                   c.CreatorId,
                                                    c.Title, // 標題
                                                    c.Description, //描述
                                                    c.Price, // 價格

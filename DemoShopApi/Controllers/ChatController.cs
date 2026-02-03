@@ -96,9 +96,9 @@ public class ChatController : ControllerBase
             .Select(m => new 
             {
                 m.Id,
-                m.SenderUserId,
-                m.Message,
-                m.CreatedAt,
+                senderUserId =m.SenderUserId,
+                message = m.Message,
+                createdAt = m.CreatedAt,
                 m.IsRead,
                 SenderName = m.Sender != null ? m.Sender.Name : "未知使用者",
                 SenderAvatar = m.Sender != null ? m.Sender.Avatar : null
@@ -106,6 +106,49 @@ public class ChatController : ControllerBase
             .ToListAsync();
     
         return Ok(messages);
+    }
+    
+    // 新建聊天室
+    [HttpPost("Create")]
+    public async Task<IActionResult> CreateChatRoom([FromBody] string targetUserId)
+    {
+        // 1. 取得當前登入使用者的 ID (發起人)
+        // 假設你的 User ID 是存放在 NameIdentifier，請依照你的專案調整
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(currentUserId))
+            return Unauthorized("請先登入");
+
+        // 2. 不能跟自己聊天
+        if (currentUserId == targetUserId)
+            return BadRequest("不能建立與自己的聊天室");
+
+        // 3. 檢查是否已經存在聊天室 (不管誰是 A 誰是 B)
+        var existingRoom = await _context.ChatRooms
+            .FirstOrDefaultAsync(r => 
+                (r.UserAid == currentUserId && r.UserBid == targetUserId) ||
+                (r.UserAid == targetUserId && r.UserBid == currentUserId));
+
+        if (existingRoom != null)
+        {
+            // 如果已經有房間，直接回傳房間 ID
+            return Ok(new { success = true, chatRoomId = existingRoom.ChatRoomId });
+        }
+
+        // 4. 如果沒有，建立新的聊天室
+        var newRoom = new ChatRoom // 請確認這裡的 Class 名稱是否跟你的 Entity 一樣
+        {
+            ChatRoomId = Guid.NewGuid().ToString(),
+            UserAid = currentUserId,
+            UserBid = targetUserId,
+            CreatedByUserId = currentUserId,
+            CreatedAt = DateTime.Now // 或是 DateTime.UtcNow
+        };
+
+        _context.ChatRooms.Add(newRoom);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { success = true, chatRoomId = newRoom.ChatRoomId });
     }
 
 }
