@@ -27,126 +27,143 @@ namespace API.Controllers
         //新增委託 -> 錢包確認 扣款
         // done
         [Authorize]
-        [HttpPost("Create")]
-        public async Task<IActionResult> CreateCommission([FromForm] CommissionCreateDto dto)
+[HttpPost("Create")]
+public async Task<IActionResult> CreateCommission([FromForm] CommissionCreateDto dto)
+{
+    // 1. 驗證資料格式
+    if (!ModelState.IsValid)
+    {
+        return BadRequest(new { success = false, errors = ModelState });
+    }
+
+    // 2. 取得使用者資訊
+    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    if (string.IsNullOrEmpty(userId)) return Unauthorized(new { success = false, message = "請重新登入" });
+
+    var user = await _proxyContext.Users.FirstOrDefaultAsync(u => u.Uid == userId);
+    if (user == null) return Unauthorized(new { success = false, message = "找不到使用者" });
+
+    // 3. 匯率計算
+    var rates = new Dictionary<string, decimal> { { "JPY", 0.201m }, { "TWD", 1.0m }, { "USD", 32.5m } };
+    decimal currentRate = rates.ContainsKey(dto.Currency ?? "TWD") ? rates[dto.Currency!] : 1.0m;
+    
+    // 計算商品原價台幣
+    decimal subtotalTwd = (dto.Price * dto.Quantity) * currentRate;
+    
+    // 計算最低報酬 (商品總價的 20%)
+    decimal minFeeTwd = Math.Round(subtotalTwd * 0.2m, 0, MidpointRounding.AwayFromZero);
+    
+    // 檢查使用者輸入的報酬是否符合最低標準
+    if (dto.Fee < minFeeTwd)
+    {
+        return BadRequest(new { 
+            success = false, 
+            code = "FEE_TOO_LOW", 
+            message = $"報酬至少需要 NT${minFeeTwd} (商品總價的 20%)" 
+        });
+    }
+    
+    // 總扣款金額 = 商品原價台幣 + 使用者輸入的報酬
+    decimal totalPriceTwd = Math.Round(subtotalTwd + dto.Fee, 0, MidpointRounding.AwayFromZero);
+
+    // 4. 餘額檢查
+    if (user.Balance < totalPriceTwd)
+    {
+        return BadRequest(new { success = false, code = "BALANCE_NOT_ENOUGH", message = "錢包餘額不足" });
+    }
+
+    using var transaction = await _proxyContext.Database.BeginTransactionAsync();
+    try
+    {
+        // 5. 扣錢
+        user.Balance -= totalPriceTwd;
+
+        // 6. 處理圖片路徑
+        string? imageUrl = null;
+        string? absolutePath = null;
+        if (dto.Image != null && dto.Image.Length > 0)
         {
-            // 1. 驗證資料格式
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new { success = false, errors = ModelState });
-            }
-
-            // 2. 取得使用者資訊
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId)) return Unauthorized(new { success = false, message = "請重新登入" });
-
-            var user = await _proxyContext.Users.FirstOrDefaultAsync(u => u.Uid == userId);
-            if (user == null) return Unauthorized(new { success = false, message = "找不到使用者" });
-
-            // 3. 匯率與費用計算
-            var rates = new Dictionary<string, decimal> { { "JPY", 0.201m }, { "TWD", 1.0m }, { "USD", 32.5m } };
-            decimal currentRate = rates.ContainsKey(dto.Currency ?? "TWD") ? rates[dto.Currency!] : 1.0m;
-            decimal subtotalTwd = (dto.Price * dto.Quantity) * currentRate;
-            decimal priceFeeTwd = Math.Round(subtotalTwd * 0.1m, 0, MidpointRounding.AwayFromZero);
-            decimal totalPriceTwd = Math.Round(subtotalTwd + priceFeeTwd, 0, MidpointRounding.AwayFromZero);
-
-            // 4. 餘額檢查
-            if (user.Balance < totalPriceTwd)
-            {
-                return BadRequest(new { success = false, code = "BALANCE_NOT_ENOUGH", message = "錢包餘額不足" });
-            }
-
-            using var transaction = await _proxyContext.Database.BeginTransactionAsync();
-            try
-            {
-                // 5. 扣錢
-                user.Balance -= totalPriceTwd;
-
-                // 6. 處理圖片路徑
-                string? imageUrl = null;
-                string? absolutePath = null;
-                if (dto.Image != null && dto.Image.Length > 0)
-                {
-                    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(dto.Image.FileName)}";
-                    absolutePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", fileName);
-                    imageUrl = $"/uploads/{fileName}";
-                }
-
-                // 7. ✨ 先建立委託實體 (解決變測宣告順序問題)
-                var commission = new Commission
-                {
-                    CreatorId = userId,
-                    Title = dto.Title,
-                    Description = dto.Description,
-                    Category = dto.Category,
-                    Location = dto.Location,
-                    Price = dto.Price,
-                    Currency = dto.Currency ?? "TWD",
-                    Fee = priceFeeTwd,
-                    EscrowAmount = totalPriceTwd,
-                    Quantity = dto.Quantity,
-                    Deadline = dto.Deadline.AddDays(7),
-                    Status = "審核中",
-                    CreatedAt = DateTime.Now,
-                    ImageUrl = imageUrl,
-                    Place = new CommissionPlace
-                    {
-                        Name = dto.Location,
-                        GooglePlaceId = dto.google_place_id ?? "",
-                        FormattedAddress = dto.formatted_address ?? "",
-                        Latitude = dto.latitude ?? 0m,
-                        Longitude = dto.longitude ?? 0m,
-                        CreatedAt = DateTime.Now
-                    }
-                };
-
-                // 8. ✨ 產生 ServiceCode (這步跑完，commission.ServiceCode 才有值)
-                await _CreateCode.CreateCommissionCodeAsync(commission);
-
-                // 9. ✨ 建立扣款紀錄日誌 (這時可以使用 commission 的屬性了)
-                var walletLog = new WalletLog
-                {
-                    Uid = userId,
-                    Action = "CommissionPay",
-                    Amount = -totalPriceTwd,      // 支出存負值
-                    Balance = user.Balance ?? 0m, // 扣款後的餘額
-                    EscrowBalance = totalPriceTwd,
-                    ServiceCode = commission.ServiceCode,
-                    Description = commission.Title, // 成功抓到 Title 囉！
-                    CreatedAt = DateTime.Now
-                };
-
-                _proxyContext.WalletLogs.Add(walletLog);
-                _proxyContext.Commissions.Add(commission);
-                await _proxyContext.SaveChangesAsync();
-
-                // 10. 記錄歷史 (CommissionHistory)
-                var history = new CommissionHistory
-                {
-                    CommissionId = commission.CommissionId,
-                    Action = "CREATE",
-                    ChangedBy = userId,
-                    NewData = "建立新委託"
-                };
-                _proxyContext.CommissionHistories.Add(history);
-                await _proxyContext.SaveChangesAsync();
-
-                // 11. 儲存實體檔案
-                if (dto.Image != null && absolutePath != null)
-                {
-                    using var stream = new FileStream(absolutePath, FileMode.Create);
-                    await dto.Image.CopyToAsync(stream);
-                }
-
-                await transaction.CommitAsync();
-                return Ok(new { success = true, data = new { serviceCode = commission.ServiceCode } });
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return StatusCode(500, new { success = false, message = "建立失敗", error = ex.Message });
-            }
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(dto.Image.FileName)}";
+            absolutePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", fileName);
+            imageUrl = $"/uploads/{fileName}";
         }
+
+        // 7. 建立委託實體
+        var commission = new Commission
+        {
+            CreatorId = userId,
+            Title = dto.Title,
+            Description = dto.Description,
+            Category = dto.Category,
+            Location = dto.Location,
+            Price = dto.Price,
+            Currency = dto.Currency ?? "TWD",
+            Fee = dto.Fee,  // 使用者輸入的報酬
+            EscrowAmount = totalPriceTwd,
+            Quantity = dto.Quantity,
+            Deadline = dto.Deadline.AddDays(7),
+            Status = "審核中",
+            CreatedAt = DateTime.Now,
+            ImageUrl = imageUrl,
+            Place = new CommissionPlace
+            {
+                Name = dto.Location,
+                GooglePlaceId = dto.google_place_id ?? "",
+                FormattedAddress = dto.formatted_address ?? "",
+                Latitude = dto.latitude ?? 0m,
+                Longitude = dto.longitude ?? 0m,
+                CreatedAt = DateTime.Now
+            }
+        };
+
+        // 8. 產生 ServiceCode
+        await _CreateCode.CreateCommissionCodeAsync(commission);
+
+        // 9. 建立扣款紀錄日誌
+        var walletLog = new WalletLog
+        {
+            Uid = userId,
+            Action = "CommissionPay",
+            Amount = -totalPriceTwd,
+            Balance = user.Balance ?? 0m,
+            EscrowBalance = totalPriceTwd,
+            ServiceCode = commission.ServiceCode,
+            Description = commission.Title,
+            CreatedAt = DateTime.Now
+        };
+
+        _proxyContext.WalletLogs.Add(walletLog);
+        _proxyContext.Commissions.Add(commission);
+        await _proxyContext.SaveChangesAsync();
+
+        // 10. 記錄歷史
+        var history = new CommissionHistory
+        {
+            CommissionId = commission.CommissionId,
+            Action = "CREATE",
+            ChangedBy = userId,
+            NewData = "建立新委託"
+        };
+        _proxyContext.CommissionHistories.Add(history);
+        await _proxyContext.SaveChangesAsync();
+
+        // 11. 儲存實體檔案
+        if (dto.Image != null && absolutePath != null)
+        {
+            using var stream = new FileStream(absolutePath, FileMode.Create);
+            await dto.Image.CopyToAsync(stream);
+        }
+
+        await transaction.CommitAsync();
+        return Ok(new { success = true, data = new { serviceCode = commission.ServiceCode } });
+    }
+    catch (Exception ex)
+    {
+        await transaction.RollbackAsync();
+        return StatusCode(500, new { success = false, message = "建立失敗", error = ex.Message });
+    }
+}
+
 
         //編輯委託 -> postpone
         [HttpPut("{ServiceCode}/Edit")]

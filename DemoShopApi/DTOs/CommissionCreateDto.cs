@@ -33,6 +33,9 @@ namespace DemoShopApi.DTOs
         // google-map用的欄位
         [Required(ErrorMessage = "請選擇幣別")]
         public string Currency { get; set; } = "TWD"; // ✨ 新增幣別
+        
+        public decimal Fee { get; set; }  // 使用者輸入的報酬
+
 
         // ✨ 修正命名：改為跟前端 axios 傳出的 key 一致 (小寫加底線)
         public string? google_place_id { get; set; } 
