@@ -65,6 +65,7 @@ public partial class DaigoContext : DbContext
 
         modelBuilder.Entity<Commission>(entity =>
         {
+            entity.ToTable("Commission", tb => tb.HasTrigger("TR_Commission_UpdateNotification"));
             entity.HasKey(e => e.CommissionId).HasName("PK__Commissi__D19D7CC921851D53");
 
             entity.ToTable("Commission");
