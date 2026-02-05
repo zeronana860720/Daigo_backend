@@ -530,12 +530,15 @@ public class DemoShopApiController : ControllerBase
             {
                 BuyerUid = buyerUid,
                 StoreId = dto.StoreId,
+                ProductId = dto.ProductId,
+                Quantity = dto.Quantity,
                 TotalAmount = dto.TotalAmount,
                 ReceiverName = dto.ReceiverName,
                 ReceiverPhone = dto.ReceiverPhone,
                 ShippingAddress = dto.ShippingAddress,
                 Status = 0,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                
             };
             
             _db.BuyerOrders.Add(order);
@@ -564,7 +567,202 @@ public class DemoShopApiController : ControllerBase
         }
     }
 
+    // ✨ 1. 取得賣家所有訂單 (包含商品資訊)
+    [Authorize]
+    [HttpGet("my/orders")]
+    public async Task<IActionResult> GetSellerOrders()
+    {
+        var sellerUid = GetCurrentSellerUid();
 
+        // 邏輯：
+        // 1. 找出這個賣家擁有的所有賣場 ID
+        // 2. 找出這些賣場底下的所有訂單
+        // 3. 同時關聯 StoreProduct (拿圖片/名稱) 和 Store (確認權限)
+
+        var orders = await _db.BuyerOrders
+            .Include(o => o.Store)           // 關聯賣場
+            .Include(o => o.StoreProduct)    // 關聯商品 (這一步很重要，你的 BuyerOrder 應該要有這個導覽屬性)
+            .Where(o => o.Store.SellerUid == sellerUid) // 只找這個賣家的
+            .OrderByDescending(o => o.CreatedAt)        // 最新的訂單在上面
+            .Select(o => new
+            {
+                // 訂單基本資訊
+                buyerOrderId = o.BuyerOrderId,
+                createdAt = o.CreatedAt,
+                status = o.Status,         // 0:未出貨, 1:已出貨, 2:已完成
+                totalAmount = o.TotalAmount,
+                quantity = o.Quantity,
+
+                // 買家資訊
+                receiverName = o.ReceiverName,
+                shippingAddress = o.ShippingAddress,
+
+                // 商品資訊 (從關聯的 Product 拿)
+                productName = o.StoreProduct != null ? o.StoreProduct.ProductName : "商品已下架或移除",
+                productImage = o.StoreProduct != null ? o.StoreProduct.ImagePath : null,
+                
+                // 物流資訊 (如果有)
+                logisticsName = o.LogisticsName,
+                trackingNumber = o.TrackingNumber,
+                shippedAt = o.ShippedAt
+            })
+            .ToListAsync();
+
+        return Ok(orders);
+    }
+
+    // ✨ 2. 賣家執行出貨
+    [Authorize]
+    [HttpPost("orders/{orderId}/ship")]
+    public async Task<IActionResult> ShipOrder(int orderId, [FromBody] ShipOrderDto dto)
+    {
+        var sellerUid = GetCurrentSellerUid();
+
+        // 1. 找出這筆訂單 (並檢查是不是這個賣家的)
+        var order = await _db.BuyerOrders
+            .Include(o => o.Store)
+            .FirstOrDefaultAsync(o => o.BuyerOrderId == orderId);
+
+        if (order == null)
+        {
+            return NotFound(new { message = "找不到此訂單" });
+        }
+
+        // 2. 安全檢查：確認這筆訂單的賣場主人，是目前登入的人
+        if (order.Store.SellerUid != sellerUid)
+        {
+            return Unauthorized(new { message = "你無權操作此訂單" });
+        }
+
+        // 3. 檢查狀態 (只有狀態 0 未出貨 才能出貨)
+        if (order.Status != 0)
+        {
+            return BadRequest(new { message = "此訂單狀態無法執行出貨 (可能已出貨或取消)" });
+        }
+
+        // 4. 更新訂單資訊
+        order.LogisticsName = dto.LogisticsName;
+        order.TrackingNumber = dto.TrackingNumber;
+        order.Status = 1;           // 設定為已出貨
+        order.ShippedAt = DateTime.Now; // 紀錄時間
+
+        // 5. 存檔
+        await _db.SaveChangesAsync();
+
+        return Ok(new { message = "出貨成功！", shippedAt = order.ShippedAt });
+    }
+    
+    // ✨ 1. 買家取得自己的購買清單
+    [Authorize]
+    [HttpGet("my/purchases")]
+    public async Task<IActionResult> GetMyPurchases()
+    {
+        var buyerUid = GetCurrentSellerUid(); // 這裡取得的是「買家」的 UID
+
+        var orders = await _db.BuyerOrders
+            .Include(o => o.Store)           // 關聯賣場 (為了顯示是在哪家店買的)
+            .Include(o => o.StoreProduct)    // 關聯商品 (顯示圖片名稱)
+            .Where(o => o.BuyerUid == buyerUid) // ✨ 關鍵：只找「我買的」
+            .OrderByDescending(o => o.CreatedAt)
+            .Select(o => new
+            {
+                buyerOrderId = o.BuyerOrderId,
+                storeName = o.Store.StoreName,  // 前端要顯示賣場名稱
+                productName = o.StoreProduct != null ? o.StoreProduct.ProductName : "商品已下架",
+                productImage = o.StoreProduct != null ? o.StoreProduct.ImagePath : null,
+                
+                status = o.Status,
+                totalAmount = o.TotalAmount,
+                createdAt = o.CreatedAt,
+                
+                // 物流資訊 (買家很關心這個)
+                logisticsName = o.LogisticsName,
+                trackingNumber = o.TrackingNumber
+            })
+            .ToListAsync();
+
+        return Ok(orders);
+    }
+
+    // ✨ 2. 買家完成訂單 (確認收貨 + 撥款)
+    [Authorize]
+    [HttpPost("orders/{orderId}/complete")]
+    public async Task<IActionResult> CompleteOrder(int orderId)
+    {
+        var buyerUid = GetCurrentSellerUid(); // 取得買家 ID
+
+        // 1. 找出訂單，並 Include Store 以便知道賣家是誰
+        var order = await _db.BuyerOrders
+            .Include(o => o.Store)           // ✨ 關鍵：要關聯賣場，才拿得到 SellerUid
+            .Include(o => o.StoreProduct)    // 為了紀錄 log，順便抓商品名
+            .FirstOrDefaultAsync(o => o.BuyerOrderId == orderId);
+
+        if (order == null)
+        {
+            return NotFound(new { message = "找不到此訂單" });
+        }
+
+        // 2. 安全檢查
+        if (order.BuyerUid != buyerUid)
+        {
+            return Unauthorized(new { message = "你無權操作此訂單" });
+        }
+
+        // 3. 狀態檢查
+        if (order.Status != 1)
+        {
+            return BadRequest(new { message = "只有「運送中」的訂單才能進行確認收貨喔！" });
+        }
+
+        // ---------------------------------------------------
+        // ✨✨✨ 這裡開始是撥款邏輯 ✨✨✨
+        // ---------------------------------------------------
+
+        // 4. 透過 Store 找到賣家的 UID
+        var sellerUid = order.Store.SellerUid;
+
+        // 5. 去 _daigoDb (User資料庫) 撈出賣家
+        var seller = await _daigoDb.Users
+            .FirstOrDefaultAsync(u => u.Uid == sellerUid);
+
+        if (seller != null)
+        {
+            // 6. 增加賣家餘額
+            seller.Balance += order.TotalAmount;
+
+            // 7. 寫入錢包紀錄 (WalletLog) - 這樣才有據可查
+            var log = new WalletLog
+            {
+                Uid = sellerUid,
+                Action = "Income", // 動作類型
+                Amount = order.TotalAmount,
+                Balance = seller.Balance??0, // 變更後的餘額
+                EscrowBalance = seller.EscrowBalance??0,
+                Description = $"賣場訂單收入: {order.StoreProduct?.ProductName ?? "商品"} (訂單#{order.BuyerOrderId})",
+                // ServiceCode 可以放訂單編號或留空，看你的設計
+                ServiceCode = $"ORDER-{order.BuyerOrderId}" 
+            };
+
+            _daigoDb.WalletLogs.Add(log);
+        }
+        else
+        {
+            // 這種情況理論上不該發生，除非賣家帳號被刪除了
+            return StatusCode(500, new { message = "找不到賣家帳戶，無法撥款" });
+        }
+
+        // ---------------------------------------------------
+        
+        // 8. 更新訂單狀態
+        order.Status = 2; // 已完成
+        order.CompletedAt = DateTime.Now;
+
+        // 9. 兩個資料庫都要存檔！
+        await _daigoDb.SaveChangesAsync(); // 存錢
+        await _db.SaveChangesAsync();      // 存訂單狀態
+
+        return Ok(new { message = "訂單完成！款項已撥入賣家帳戶 🎉" });
+    }
 
     
     

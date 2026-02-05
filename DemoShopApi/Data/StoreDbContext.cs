@@ -69,11 +69,29 @@ public partial class StoreDbContext : DbContext
         entity.Property(e => e.TotalAmount)
             .HasColumnType("decimal(15, 2)")
             .HasColumnName("total_amount");
+        // ✨ 放在 entity.Property(e => e.StoreId).HasColumnName("store_id"); 下面即可
+        entity.Property(e => e.ProductId).HasColumnName("product_id");
+        entity.Property(e => e.Quantity).HasColumnName("quantity");
+        
+        entity.Property(e => e.LogisticsName)
+            .HasMaxLength(50)
+            .HasColumnName("logistics_name");
+
+        entity.Property(e => e.TrackingNumber)
+            .HasMaxLength(50)
+            .HasColumnName("tracking_number");
 
         entity.HasOne(d => d.Store).WithMany(p => p.BuyerOrders)
             .HasForeignKey(d => d.StoreId)
             .OnDelete(DeleteBehavior.ClientSetNull)
             .HasConstraintName("FK_BuyerOrder_Store");
+        
+        // 在 OnModelCreating 的 BuyerOrder 區塊
+        entity.HasOne(d => d.StoreProduct)
+            .WithMany() // 假設 StoreProduct 那邊沒有設定 List<BuyerOrder>，這裡就留空
+            .HasForeignKey(d => d.ProductId)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_BuyerOrder_Product"); // 確認資料庫是否有這個 FK，沒有的話這行可以先拿掉
     });
 
     modelBuilder.Entity<BuyerOrderDetail>(entity =>

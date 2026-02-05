@@ -22,5 +22,12 @@ namespace DemoShopApi.DTOs
         [Required(ErrorMessage = "收件地址不能為空")]
         [MaxLength(255, ErrorMessage = "收件地址最多 255 字")]
         public string ShippingAddress { get; set; }
+        
+        [Required(ErrorMessage = "商品 ID 不能為空")]
+        public int ProductId { get; set; }
+
+        [Required(ErrorMessage = "購買數量不能為空")]
+        [Range(1, int.MaxValue, ErrorMessage = "購買數量至少要 1 個")]
+        public int Quantity { get; set; }
     }
 }
