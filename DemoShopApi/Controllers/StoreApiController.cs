@@ -762,8 +762,36 @@ public class DemoShopApiController : ControllerBase
         await _db.SaveChangesAsync();      // 存訂單狀態
 
         return Ok(new { message = "訂單完成！款項已撥入賣家帳戶 🎉" });
-    }
+    }// 取得首頁「精選現貨」 (隨機 4 筆上架商品)
+    [HttpGet("featured-products")]
+    [AllowAnonymous] // 允許未登入的使用者查看
+    public async Task<IActionResult> GetFeaturedProducts()
+    {
+        var products = await _db.StoreProducts
+            .Include(p => p.Store)  // 關聯賣場資料
+            .Include(p => p.Place)  // 關聯地點資料
+            .Where(p => p.Status == 3) // ✨ 只抓「販售中」
+            .OrderBy(r => Guid.NewGuid()) // ✨ 隨機排序
+            .Take(4) // 只取 4 筆
+            .Select(p => new
+            {
+                id = p.ProductId,
+                name = p.ProductName,
+                price = p.Price,
+                image = p.ImagePath, 
+                
+                // 地點邏輯：優先顯示 Place 名稱 -> 其次顯示商品 Location -> 最後顯示預設字
+                location = p.Place != null ? p.Place.Name : 
+                    (!string.IsNullOrEmpty(p.Location) ? p.Location : "賣家出貨"),
+                
+                category = p.Category,
+                deadline = p.EndDate
+            })
+            .ToListAsync();
 
+        return Ok(products);
+    }
+    
     
     
 }
