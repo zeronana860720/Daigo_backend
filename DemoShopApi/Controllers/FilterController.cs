@@ -49,7 +49,7 @@ namespace API大專.Controllers
                 );
             }
 
-            // 3. 地點篩選 (核心修改：支援中英文多重關鍵字)
+            // 3. 地點篩選 (支援中英文多重關鍵字)
             // 前端傳入範例："osaka,大阪"
             if (!string.IsNullOrWhiteSpace(location))
             {
@@ -74,7 +74,7 @@ namespace API大專.Controllers
                 query = query.Where(c => c.Price <= maxPrice.Value);
 
             // 5. 排序邏輯
-            // 解析排序字串，例如 "price_asc,deadline_desc"
+            // 解析排序字串，例如 "fee_rate_desc,price_asc"
             var sortOrders = sort?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
             IOrderedQueryable<Commission>? orderedQuery = null;
 
@@ -86,18 +86,30 @@ namespace API大專.Controllers
 
                 switch (action)
                 {
+                    // ✨✨✨ 新增這裡：報酬率排序邏輯 ✨✨✨
+                    case "fee_rate_desc": 
+                        // 邏輯：(Fee / Price) 由大到小
+                        // 注意：加上 (c.Price == 0 ? 0 : ...) 是為了防止除以零錯誤
+                        orderedQuery = isFirst
+                            ? query.OrderByDescending(c => c.Price == 0 ? 0 : c.Fee / c.Price)
+                            : orderedQuery!.ThenByDescending(c => c.Price == 0 ? 0 : c.Fee / c.Price);
+                        break;
+
                     case "price_asc": // 價格由低到高
                         orderedQuery = isFirst ? query.OrderBy(c => c.Price) : orderedQuery!.ThenBy(c => c.Price);
                         break;
+
                     case "price_desc": // 價格由高到低
                         orderedQuery = isFirst ? query.OrderByDescending(c => c.Price) : orderedQuery!.ThenByDescending(c => c.Price);
                         break;
+
                     case "deadline_asc": // 截止日由近到遠
                         // 處理 Null 值，將 Null 視為最大值放到最後
                         orderedQuery = isFirst
                             ? query.OrderBy(c => c.Deadline ?? DateTime.MaxValue)
                             : orderedQuery!.ThenBy(c => c.Deadline ?? DateTime.MaxValue);
                         break;
+
                     case "deadline_desc": // 截止日由遠到近
                         orderedQuery = isFirst
                             ? query.OrderByDescending(c => c.Deadline ?? DateTime.MinValue)
